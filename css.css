@@ -20,10 +20,33 @@ body {
     background: var(--color-dark);
 }
 
+.search {
+    display: flex;
+    justify-content: center;
+    margin: 15px;
+    width: 100%;
+}
+
+.hidden {
+    display: none;
+}
+
+#txtSearch {
+    width: 40%;
+    height: 45px;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, .6)
+}
+
+#txtSearch:focus {
+    background-color: white
+}
+
 .title {
     font-size: 16px;
     font-weight: bold;
     color: white;
+    margin-bottom: 5px;
 }
 
 .title[contenteditable][placeholder]:empty:before {
@@ -36,16 +59,12 @@ body {
 }
 
 .plus {
-
     color: white;
     font-size: 14px;
-
-    /* background-color: red; */
 }
 
 .item {
     display: flex;
-    /* background-color: white; */
 }
 
 .element {
@@ -82,24 +101,49 @@ body {
     background-color: var(--color-dark);
 }
 
-
-/* .checkbox-item:focus {
-    accent-color: var(--color-dark);
-    
-    background-color: var(--color-dark);
- 
-    border: 0.125rem solid white;
-} */
-
-
-
-.square {
-    /* background-color: red; */
+/* .square {
     margin: 10%;
     padding: 20px;
+} */
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
 }
+
+.square {
+    flex: none;
+    width: 250px;
+    height: 450px;
+    margin: 10px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: white;
+    border-radius: 10px;
+}
+
 
 #txtTitle {
     border: none;
     background: var(--color-dark);
+}
+
+.icon-plus {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    width: 45px;
+    height: 45px;
+    line-height: 55px;
+    bottom: 20px;
+    right: 20px;
+    color: green;
+    border-radius: 50px;
+    text-align: center;
+    font-size: 30px;
+    box-shadow: 0px 1px 10px rgba(0, 0, 0, 0.9);
+    z-index: 100;
+    background-color: var(--color-dark);
+    cursor: pointer;
 }
