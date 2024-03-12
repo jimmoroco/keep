@@ -133,8 +133,8 @@ body {
     justify-content: center;
     align-items: center;
     position: fixed;
-    width: 45px;
-    height: 45px;
+    width: 65px;
+    height: 65px;
     line-height: 55px;
     bottom: 20px;
     right: 20px;
@@ -146,4 +146,6 @@ body {
     z-index: 100;
     background-color: var(--color-dark);
     cursor: pointer;
+    font-weight: bold;
+    font-size: 55px;
 }
