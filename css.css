@@ -46,7 +46,7 @@ body {
     font-size: 16px;
     font-weight: bold;
     color: white;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
 }
 
 .title[contenteditable][placeholder]:empty:before {
@@ -65,6 +65,7 @@ body {
 
 .item {
     display: flex;
+    margin-bottom: 8px;
 }
 
 .element {
@@ -72,16 +73,26 @@ body {
     align-items: center;
     display: flex;
     padding-left: 12px;
+    border-color: var(--color-dark);
+    border-width: 0px;
     color: white;
+    background-color: var(--color-dark);
 }
 
-.element[contenteditable][placeholder]:empty:before {
+
+.element:focus {
+    border-width: 0px;
+    background-color: var(--color-dark);
+    outline: 0;
+}
+
+/* .element[contenteditable][placeholder]:empty:before {
     content: attr(placeholder);
     position: absolute;
     color: gray;
     font-size: 14px;
     background-color: transparent;
-}
+} */
 
 .appearance {
     appearance: none;
@@ -101,10 +112,25 @@ body {
     background-color: var(--color-dark);
 }
 
-/* .square {
-    margin: 10%;
+.edit-area {
+    display: flex;
+    justify-content: center;
+    /* border-color: #FFDD00;
+    border-style: dashed; */
+    margin: 10px;
+    padding: 2px;
+}
+
+.square-edit {
+    margin: 20px;
     padding: 20px;
-} */
+    width: 600px;
+    background-color: var(--color-dark);
+    border-color: white;
+    border-radius: 10px;
+    box-shadow: 0px 1px 10px rgba(0, 0, 0, 0.9);
+}
+
 .container {
     display: flex;
     flex-wrap: wrap;
@@ -114,7 +140,7 @@ body {
 .square {
     flex: none;
     width: 250px;
-    height: 450px;
+    /* height: 450px; */
     margin: 10px;
     border-width: 1px;
     border-style: solid;
