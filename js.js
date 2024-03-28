@@ -23,40 +23,77 @@ document.addEventListener("click", function (e) {
             }
         }
         if (!clickInSquareEdit) {
-            if (title.innerText != "") {
+            console.log("jiooooooooooom");
+            if (divSquareEdit.children[0].innerText != "") {
+                console.log("jieeeeeeeeem");
                 qSquares++;
                 squareItem = getHTMLSquare();
                 localStorage.setItem(`square-${qSquares}`, squareItem);
                 localStorage.setItem("qSquares", qSquares);
-                addSquares(squareItem);
+                addSquares(squareItem, qSquares);
             }
             divSquareEdit.classList.add("hidden");
         }
     }
 });
 
-function getHTMLSquare() {
-    let squareItem = divSquareEdit.innerHTML;
-    squareItem = squareItem.replace(/contenteditable="true"/g, `contenteditable="false"`);
-    squareItem = squareItem.replace(/type="checkbox" class=/g, `type="checkbox" disabled style="cursor:pointer" class=`);
-    return squareItem;
-}
-
 window.addEventListener("load", function () {
     qSquares = localStorage.getItem("qSquares");
     if (qSquares == null) localStorage.setItem("qSquares", 0);
-    square = document.getElementsByClassName("square")[0];
+
     divContainer = document.getElementsByClassName("container")[0];
-
-    let iconPlus = document.getElementById("icon-plus")
-
     divSquareEdit = document.getElementById("div-square-edit");
 
-    iconPlus.addEventListener("click", function (e) {
-        divSquareEdit.classList.remove("hidden");
+    let iconPlus = document.getElementById("icon-plus")
+    iconPlus.addEventListener("click", function () {
+        showSquareEdit();
+    });
+
+    if (qSquares > 0) {
+        let squareItem;
+        for (let index = 1; index <= qSquares; index++) {
+            squareItem = localStorage.getItem(`square-${index}`);
+            addSquares(squareItem, index);
+        }
+    }
+
+    // square = document.getElementsByClassName("square")[0];
+    // square.addEventListener("click", function () {
+    //     console.log("78");
+    //     showSquareEdit(this);
+    // });
+});
+
+function getHTMLSquare() {
+    let squareItem = divSquareEdit.innerHTML;
+    squareItem = squareItem.replace(/contenteditable="true"/g, `contenteditable="false"`);
+    squareItem = squareItem.replace(/type="checkbox" class=/g, `type="checkbox" disabled="true" style="cursor:pointer" class=`);
+    return squareItem;
+}
+
+function getHTMLSquareEdit(html) {
+    console.log("moroco");
+    console.log(html);
+    html = html.replace(/contenteditable="false"/g, `contenteditable="true"`);
+    //squareItem = squareItem.replace(/type="checkbox" disabled="true" style="cursor:pointer" class=/g, `type="checkbox" class=`);
+    return html;
+}
+
+function showSquareEdit(squareHTML) {
+    console.log("jim");
+    if (squareHTML) {
+        // console.log("jim-100");
+        // console.log("1", squareHTML);
+        let classId = `square-${squareHTML.dataset.square}`;
+        // console.log("2", classId);
+        divSquareEdit.innerHTML = getHTMLSquareEdit(squareHTML.innerHTML);
+        divSquareEdit.classList.add("exists"); //document.getElementsByClassName(classId)[0].innerHTML;
+    }
+    else {
+        console.log("jim-200");
         divSquareEdit.innerHTML = DIV_SQUARE_EDIT;
         title = document.getElementsByClassName("title")[0];
-        let element = document.getElementsByClassName("element")[0];
+        let element = document.getElementById("element-0");
         title.addEventListener("keypress", function (event) {
             let keycode = (event.keyCode ? event.keyCode : event.which);
             if (keycode == '13') {
@@ -66,21 +103,16 @@ window.addEventListener("load", function () {
         element.addEventListener("keypress", function (event) {
             nextElement(event);
         });
-        title.focus();
-    });
-
-    if (qSquares > 0) {
-        let squareItem;
-        for (let index = 1; index <= qSquares; index++) {
-            squareItem = localStorage.getItem(`square-${index}`);
-            addSquares(squareItem);
-        }
+        divSquareEdit.classList.remove("exists")
     }
-});
+    divSquareEdit.classList.remove("hidden");
+    //title.focus();
+}
 
-function addSquares(squareItem) {
+function addSquares(squareItem, qSquares) {
     let html = "";
-    html += "<div class='square'>";
+    //console.log("qSquares", qSquares);
+    html += `<div class='square square-${qSquares}' onclick= showSquareEdit(this); data-square='${qSquares}'>`;
     html += squareItem;
     html += "</div>";
     divContainer.insertAdjacentHTML("afterbegin", html);
