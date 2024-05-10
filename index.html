@@ -14,22 +14,12 @@
         <div class="search hidden">
             <input type="text" name="" id="txtSearch">
         </div>
-        <div class="edit-area">
-            <div id="div-square-edit" class="square-edit edit hidden">
-                <div id="div-title" class="title edit" contenteditable="true" placeholder="Título"></div>
-                <div id="div-item" class="item edit">
-                    <span class="plus edit">&#128930;</span>
-                    <div contenteditable="true" class="element edit" placeholder="Elemento de lista"
-                        data-has-next-element="0" id="element-0"></div>
-                </div>
-            </div>
-        </div>
-        <div class="container">
-        </div>
+        <div class="edit-area hidden" id="div-container-edit"></div>
+        <div class="container" id="div-container"></div>
     </div>
 </body>
 <footer>
-    <span class="icon-plus edit" id="icon-plus">+</span>
+    <span class="icon-plus no-edit" id="icon-plus">+</span>
 </footer>
 <script src="js.js"></script>
 

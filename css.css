@@ -10,14 +10,9 @@
     --color-page: #FFDD00;
 }
 
-[contenteditable="true"]:active,
-[contenteditable="true"]:focus {
-    border: none;
-    outline: none;
-}
-
 body {
     background: var(--color-dark);
+    height: 99vh;
 }
 
 .search {
@@ -29,6 +24,10 @@ body {
 
 .hidden {
     display: none;
+}
+
+.show {
+    display: block;
 }
 
 #txtSearch {
@@ -47,20 +46,20 @@ body {
     font-weight: bold;
     color: white;
     margin-bottom: 10px;
+    border-width: 0px;
+    color: white;
+    background-color: var(--color-dark);
 }
 
-.title[contenteditable][placeholder]:empty:before {
-    content: attr(placeholder);
-    position: absolute;
-    color: gray;
-    font-size: 15px;
-    font-weight: bold;
-    background-color: transparent;
+.title:focus {
+    border-width: 0px;
+    background-color: var(--color-dark);
+    outline: 0;
 }
 
 .plus {
     color: white;
-    font-size: 14px;
+    font-size: 19px;
 }
 
 .item {
@@ -86,16 +85,14 @@ body {
     outline: 0;
 }
 
-/* .element[contenteditable][placeholder]:empty:before {
-    content: attr(placeholder);
-    position: absolute;
-    color: gray;
-    font-size: 14px;
-    background-color: transparent;
-} */
-
 .appearance {
     appearance: none;
+}
+
+.line-through {
+    text-decoration-line:line-through;
+    text-decoration-style:  solid;
+    text-decoration-thickness: 2px;
 }
 
 .checkbox-item {
@@ -115,8 +112,6 @@ body {
 .edit-area {
     display: flex;
     justify-content: center;
-    /* border-color: #FFDD00;
-    border-style: dashed; */
     margin: 10px;
     padding: 2px;
 }
@@ -130,6 +125,12 @@ body {
     border-radius: 10px;
     box-shadow: 0px 1px 10px rgba(0, 0, 0, 0.9);
 }
+
+.square-done {
+    margin: 10px;
+    /* padding: 20px; */
+}
+
 
 .container {
     display: flex;
