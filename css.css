@@ -67,6 +67,20 @@ body {
     margin-bottom: 8px;
 }
 
+.item-enter {
+    border-width: 0.100rem;
+    border-style: solid;
+    border-color: white;
+}
+
+.close {
+    margin-left: auto;
+    color: #757575;
+    background-color: var(--color-dark);
+    cursor: pointer;
+    font-size: larger;
+}
+
 .element {
     font-size: 14px;
     align-items: center;
@@ -76,8 +90,8 @@ body {
     border-width: 0px;
     color: white;
     background-color: var(--color-dark);
+    width: 90%;
 }
-
 
 .element:focus {
     border-width: 0px;
@@ -90,9 +104,10 @@ body {
 }
 
 .line-through {
-    text-decoration-line:line-through;
-    text-decoration-style:  solid;
+    text-decoration-line: line-through;
+    text-decoration-style: solid;
     text-decoration-thickness: 2px;
+    color: #757575;
 }
 
 .checkbox-item {
@@ -119,7 +134,7 @@ body {
 .square-edit {
     margin: 20px;
     padding: 20px;
-    width: 600px;
+    width: 500px;
     background-color: var(--color-dark);
     border-color: white;
     border-radius: 10px;
@@ -127,10 +142,9 @@ body {
 }
 
 .square-done {
-    margin: 10px;
+    margin-top: 15px;
     /* padding: 20px; */
 }
-
 
 .container {
     display: flex;

@@ -1,11 +1,5 @@
-const INPUT_CHECKBOX = `<input type='checkbox'
-                               class='checkbox-item appearance edit'
-                               onchange='checkedItem(this)'
-                        />`;
 let divContainerEdit;
 let itemEdit;
-
-
 
 let square;
 
@@ -134,36 +128,119 @@ function getDivSquareEdit() {
     html += "<div id='div-pending' class='square-pending edit'>";
     html += "<input type='text' id='input-title-0' class='title edit' ";
     html += "placeholder='Título' onkeypress='nextElementFromTitle(event,0,0);'>";
-    html += "<div id='div-item-0-0' class='item edit'><span class='plus edit'>+</span>";
+    html += "<div id='div-item-0-0' class='item edit' onmouseenter='toggleClose(this,true)' onmouseleave='toggleClose(this,false)'>";
+    html += "<span class='plus edit'>+</span>";
     html += "<input type='text' id='input-element-0-0' class='element edit' ";
     html += "placeholder='Elemento de lista' data-has-next-element='0' ";
-    html += "onkeypress='nextElement(event,0,1);'>";
-    html += "</div></div>";    
+    html += "onkeypress='nextElement(event,0,1);' onfocusin='toggleClose(this,true)' onfocusout='toggleClose(this,false)'>";
+    html += "<span class='close hidden edit' onclick='deleteItem(this)'>x</span>";
+    html += "</div></div>";
     html += "<div id='div-done' class='square-done edit'>";
     html += "</div></div>";
     return html;
 }
+
+//reviewer
+function deleteItem(span) {
+    span.parentNode.parentNode.removeChild(span.parentNode);
+}
+
+//reviewer
+function toggleClose(element, enter) {
+    if (element instanceof HTMLInputElement) {
+        element = element.parentNode;
+    }
+    if (element.getElementsByClassName("plus")[0].innerHTML == "+") {
+        return;
+    }
+    let spanClose = element.getElementsByClassName("close")[0];
+    if (!spanClose) {
+        return;
+    }
+    if (enter) {
+        spanClose.classList.remove("hidden");
+    }
+    else {
+        if (spanClose.previousSibling != document.activeElement) {
+            spanClose.classList.add("hidden");
+        }
+    }
+}
+
+
 
 // reviewer
 function nextElementFromTitle(event, squareId, elementId) {
     let element = getAnyElement(squareId, elementId);
     detectEnter(event, element);
 }
-
 // reviewer
 function getAnyElement(squareId, elementId) {
     return document.getElementById(`input-element-${squareId}-${elementId}`);
 }
+// reviewer
+function getIdForAnyElement(element) {
+    let elementId = element.id;
+    let indexStart = elementId.lastIndexOf('-') + 1;
+    return +elementId.substring(indexStart);
+}
 
 // reviewer falta
 function checkedItem(checkBox) {
+    let divItem = checkBox.parentNode.parentNode;
+    let inputTarget = checkBox.parentNode.nextSibling;
     checkBox.classList.toggle("appearance");
+    inputTarget.classList.toggle("line-through");
+    //
     let divDone = document.getElementById("div-done");
-    //html += "<hr class='edit'>"; beforebegin
-    divDone.insertAdjacentHTML("beforeend", "jim moroco");
-    checkBox.parentNode.nextSibling.classList.toggle("line-through");
-
+    let divPending = document.getElementById("div-pending");
+    //
+    inputTarget.readOnly = checkBox.checked;
+    if (checkBox.checked) {
+        divPending.removeChild(divItem);
+        if (divDone.innerHTML == "") {
+            divDone.insertAdjacentHTML("beforebegin", "<hr id='hr-n' class='edit'>");
+        }
+        divDone.appendChild(divItem);
+    }
+    else {
+        //divDone.removeChild(divItem);
+        appendChildToDivDone(divPending, divItem);
+        if (divDone.innerHTML == "") {
+            document.getElementById("div-square-edit").removeChild(document.getElementById("hr-n"));
+        }
+    }
 }
+
+// reviewer // falta
+function appendChildToDivDone(div, itemPending) {
+    let items = div.getElementsByClassName("item");
+    let id = getIdForAnyElement(itemPending);
+    if (id == 0) {
+        div.insertBefore(itemPending, items[0]);
+        return;
+    }
+    let idItem;
+    for (let i = 0; i < items.length; i++) {
+        idItem = getIdForAnyElement(items[i]);
+        if (idItem > id) {
+            div.insertBefore(itemPending, items[i]);
+            return;
+        }
+    }
+    div.insertBefore(itemPending, null);
+}
+
+// reviewer
+// function getElement(input, checked) {
+//     let html = "";
+//     html += getInputCheckBox(checked);
+//     html += " - ";
+//     html += input.value;
+//     //inputTarget.classList.toggle("line-through");
+//     return html;
+// }
+
 
 // reviewer
 function nextElement(event, squareId, elementId) {
@@ -173,11 +250,24 @@ function nextElement(event, squareId, elementId) {
     if (hasNextElement == "0") {
         let parentActualElement = actualElement.parentNode.parentNode;
         parentActualElement.insertAdjacentHTML("beforeend", getPendingItem(squareId, elementId));
-        //console.log("parentActualElement",parentActualElement);
-        actualElement.previousSibling.innerHTML = INPUT_CHECKBOX;
+        actualElement.previousSibling.innerHTML = getInputCheckBox(false);
         actualElement.setAttribute('data-has-next-element', "1");
     }
     detectEnter(event, nextElement);
+    toggleClose(actualElement, true);
+}
+
+// reviewer
+function getInputCheckBox(checked) {
+    let html = "";
+    let classList = checked ? "checkbox-item edit" : "checkbox-item appearance edit";
+    let checkedHtml = checked ? "checked" : "";
+    html += "<input type='checkbox' class='";
+    html += classList;
+    html += "' ";
+    html += checkedHtml;
+    html += " onchange='checkedItem(this)'/>";
+    return html;
 }
 
 // reviewer
@@ -195,7 +285,7 @@ function getPendingItem(squareId, elementId) {
     html += squareId;
     html += "-";
     html += elementId;
-    html += "' class='item edit'>";
+    html += "' class='item edit' onmouseenter='toggleClose(this,true)' onmouseleave='toggleClose(this,false)'>";
     html += "<span class='plus edit'>+</span>";
     html += "<input type='text' id='input-element-";
     html += squareId;
@@ -209,7 +299,8 @@ function getPendingItem(squareId, elementId) {
     html += ",";
     elementId = elementId + 1;
     html += elementId;
-    html += ");'>";
+    html += ");' onfocusin='toggleClose(this,true)' onfocusout='toggleClose(this,false)'>";
+    html += "<span class='close hidden edit' onclick='deleteItem(this)'>x</span>";
     html += "</div>";
     return html;
 }
