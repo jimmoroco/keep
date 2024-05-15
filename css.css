@@ -118,6 +118,7 @@ body {
     border-width: 0.100rem;
     border-style: solid;
     border-color: white;
+    cursor: pointer;
 }
 
 .checkbox-item:checked {

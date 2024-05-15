@@ -1,5 +1,6 @@
 let divContainerEdit;
 let itemEdit;
+let indexOnFocusSpan = false;
 
 let square;
 
@@ -117,10 +118,6 @@ function showSquareEdit() {
     divContainerEdit.classList.remove("hidden");
     console.log("showSquareEdit")
 }
-
-// reviewer
-//function
-
 // reviewer
 function getDivSquareEdit() {
     let html = "";
@@ -128,47 +125,79 @@ function getDivSquareEdit() {
     html += "<div id='div-pending' class='square-pending edit'>";
     html += "<input type='text' id='input-title-0' class='title edit' ";
     html += "placeholder='Título' onkeypress='nextElementFromTitle(event,0,0);'>";
-    html += "<div id='div-item-0-0' class='item edit' onmouseenter='toggleClose(this,true)' onmouseleave='toggleClose(this,false)'>";
+    html += "<div id='div-item-0-0' class='item edit' onmouseenter='onMouseEnterItem(this)' onmouseleave='onMouseLeaveItem(this)'>";
     html += "<span class='plus edit'>+</span>";
     html += "<input type='text' id='input-element-0-0' class='element edit' ";
     html += "placeholder='Elemento de lista' data-has-next-element='0' ";
-    html += "onkeypress='nextElement(event,0,1);' onfocusin='toggleClose(this,true)' onfocusout='toggleClose(this,false)'>";
-    html += "<span class='close hidden edit' onclick='deleteItem(this)'>x</span>";
+    html += "onkeypress='nextElement(event,0,1);' onfocusin='onFocusInInput(this)' onfocusout='onFocusOutInput(this)'>";
+    html += "<span class='close hidden edit' onclick='deleteItem(this)' onmouseenter='onMouseEnterSpan(true)' onmouseleave='onMouseEnterSpan(false)'>x</span>";
     html += "</div></div>";
     html += "<div id='div-done' class='square-done edit'>";
     html += "</div></div>";
     return html;
 }
-
+//reviewer
+function onMouseEnterSpan(flag) {
+    indexOnFocusSpan = flag;
+}
 //reviewer
 function deleteItem(span) {
     span.parentNode.parentNode.removeChild(span.parentNode);
+    indexOnFocusSpan = false;
 }
-
 //reviewer
-function toggleClose(element, enter) {
-    if (element instanceof HTMLInputElement) {
-        element = element.parentNode;
-    }
-    if (element.getElementsByClassName("plus")[0].innerHTML == "+") {
+function onMouseEnterItem(div) {
+    let input = div.getElementsByClassName("element")[0];
+    if (!hasTextInInput(input)) {
         return;
     }
-    let spanClose = element.getElementsByClassName("close")[0];
+    let spanClose = div.getElementsByClassName("close")[0];
     if (!spanClose) {
         return;
     }
-    if (enter) {
-        spanClose.classList.remove("hidden");
+    spanClose.classList.remove("hidden");
+}
+//reviewer
+function onMouseLeaveItem(div) {
+    let spanClose = div.getElementsByClassName("close")[0];
+    if (!spanClose) {
+        return;
     }
-    else {
-        if (spanClose.previousSibling != document.activeElement) {
-            spanClose.classList.add("hidden");
-        }
+    let input = div.getElementsByClassName("element")[0];
+    if (input != document.activeElement) {
+        spanClose.classList.add("hidden");
     }
 }
-
-
-
+//reviewer
+function onFocusInInput(input) {
+    let div = input.parentNode;
+    if (!hasTextInInput(input)) {
+        return;
+    }
+    let spanClose = div.getElementsByClassName("close")[0];
+    if (!spanClose) {
+        return;
+    }
+    spanClose.classList.remove("hidden");
+}
+//reviewer
+function onFocusOutInput(input) {
+    let div = input.parentNode;
+    let spanClose = div.getElementsByClassName("close")[0];
+    if (!spanClose) {
+        return;
+    }
+    console.log("indexOnFocusSpan", indexOnFocusSpan);
+    if (indexOnFocusSpan) {
+        return;
+    }
+    spanClose.classList.add("hidden");
+}
+//reviewer
+function hasTextInInput(input) {
+    let hasNextElement = input.getAttribute('data-has-next-element');
+    return hasNextElement == "1";
+}
 // reviewer
 function nextElementFromTitle(event, squareId, elementId) {
     let element = getAnyElement(squareId, elementId);
@@ -185,7 +214,7 @@ function getIdForAnyElement(element) {
     return +elementId.substring(indexStart);
 }
 
-// reviewer falta
+// reviewer
 function checkedItem(checkBox) {
     let divItem = checkBox.parentNode.parentNode;
     let inputTarget = checkBox.parentNode.nextSibling;
@@ -204,15 +233,13 @@ function checkedItem(checkBox) {
         divDone.appendChild(divItem);
     }
     else {
-        //divDone.removeChild(divItem);
         appendChildToDivDone(divPending, divItem);
         if (divDone.innerHTML == "") {
             document.getElementById("div-square-edit").removeChild(document.getElementById("hr-n"));
         }
     }
 }
-
-// reviewer // falta
+// reviewer
 function appendChildToDivDone(div, itemPending) {
     let items = div.getElementsByClassName("item");
     let id = getIdForAnyElement(itemPending);
@@ -230,18 +257,6 @@ function appendChildToDivDone(div, itemPending) {
     }
     div.insertBefore(itemPending, null);
 }
-
-// reviewer
-// function getElement(input, checked) {
-//     let html = "";
-//     html += getInputCheckBox(checked);
-//     html += " - ";
-//     html += input.value;
-//     //inputTarget.classList.toggle("line-through");
-//     return html;
-// }
-
-
 // reviewer
 function nextElement(event, squareId, elementId) {
     let actualElement = event.target;
@@ -252,21 +267,21 @@ function nextElement(event, squareId, elementId) {
         parentActualElement.insertAdjacentHTML("beforeend", getPendingItem(squareId, elementId));
         actualElement.previousSibling.innerHTML = getInputCheckBox(false);
         actualElement.setAttribute('data-has-next-element', "1");
+        //****
+        let spanClose = actualElement.parentNode.getElementsByClassName("close")[0];
+        if (spanClose) {
+            spanClose.classList.remove("hidden");
+        }
+        //****
     }
     detectEnter(event, nextElement);
-    toggleClose(actualElement, true);
 }
-
 // reviewer
 function getInputCheckBox(checked) {
     let html = "";
-    let classList = checked ? "checkbox-item edit" : "checkbox-item appearance edit";
-    let checkedHtml = checked ? "checked" : "";
-    html += "<input type='checkbox' class='";
-    html += classList;
-    html += "' ";
-    html += checkedHtml;
-    html += " onchange='checkedItem(this)'/>";
+    html += "<input type='checkbox' ";
+    html += "class='checkbox-item appearance edit' ";
+    html += "onchange='checkedItem(this)'/>";
     return html;
 }
 
@@ -285,7 +300,7 @@ function getPendingItem(squareId, elementId) {
     html += squareId;
     html += "-";
     html += elementId;
-    html += "' class='item edit' onmouseenter='toggleClose(this,true)' onmouseleave='toggleClose(this,false)'>";
+    html += "' class='item edit' onmouseenter='onMouseEnterItem(this)' onmouseleave='onMouseLeaveItem(this)'>";
     html += "<span class='plus edit'>+</span>";
     html += "<input type='text' id='input-element-";
     html += squareId;
@@ -299,8 +314,8 @@ function getPendingItem(squareId, elementId) {
     html += ",";
     elementId = elementId + 1;
     html += elementId;
-    html += ");' onfocusin='toggleClose(this,true)' onfocusout='toggleClose(this,false)'>";
-    html += "<span class='close hidden edit' onclick='deleteItem(this)'>x</span>";
+    html += ");' onfocusin='onFocusInInput(this)' onfocusout='onFocusOutInput(this)'>";
+    html += "<span class='close hidden edit' onclick='deleteItem(this)' onmouseenter='onMouseEnterSpan(true)' onmouseleave='onMouseEnterSpan(false)'>x</span>";
     html += "</div>";
     return html;
 }
