@@ -126,6 +126,7 @@ function getDivSquareEdit() {
     html += "<input type='text' id='input-title-0' class='title edit' ";
     html += "placeholder='Título' onkeypress='nextElementFromTitle(event,0,0);'>";
     html += "<div id='div-item-0-0' class='item edit' onmouseenter='onMouseEnterItem(this)' onmouseleave='onMouseLeaveItem(this)'>";
+    html += "<span class='mover edit' style='visibility:hidden;'>&#9208;</span>";
     html += "<span class='plus edit'>+</span>";
     html += "<input type='text' id='input-element-0-0' class='element edit' ";
     html += "placeholder='Elemento de lista' data-has-next-element='0' ";
@@ -152,20 +153,24 @@ function onMouseEnterItem(div) {
         return;
     }
     let spanClose = div.getElementsByClassName("close")[0];
+    let spanMover = div.getElementsByClassName("mover")[0];
     if (!spanClose) {
         return;
     }
     spanClose.classList.remove("hidden");
+    spanMover.style.visibility = "visible";
 }
 //reviewer
 function onMouseLeaveItem(div) {
     let spanClose = div.getElementsByClassName("close")[0];
+    let spanMover = div.getElementsByClassName("mover")[0];
     if (!spanClose) {
         return;
     }
     let input = div.getElementsByClassName("element")[0];
     if (input != document.activeElement) {
         spanClose.classList.add("hidden");
+        spanMover.style.visibility = "hidden";
     }
 }
 //reviewer
@@ -175,15 +180,18 @@ function onFocusInInput(input) {
         return;
     }
     let spanClose = div.getElementsByClassName("close")[0];
+    let spanMover = div.getElementsByClassName("mover")[0];
     if (!spanClose) {
         return;
     }
     spanClose.classList.remove("hidden");
+    spanMover.style.visibility = "visible";
 }
 //reviewer
 function onFocusOutInput(input) {
     let div = input.parentNode;
     let spanClose = div.getElementsByClassName("close")[0];
+    let spanMover = div.getElementsByClassName("mover")[0];
     if (!spanClose) {
         return;
     }
@@ -192,6 +200,7 @@ function onFocusOutInput(input) {
         return;
     }
     spanClose.classList.add("hidden");
+    spanMover.style.visibility = "hidden";
 }
 //reviewer
 function hasTextInInput(input) {
@@ -269,8 +278,10 @@ function nextElement(event, squareId, elementId) {
         actualElement.setAttribute('data-has-next-element', "1");
         //****
         let spanClose = actualElement.parentNode.getElementsByClassName("close")[0];
+        let spanMover = actualElement.parentNode.getElementsByClassName("mover")[0];
         if (spanClose) {
             spanClose.classList.remove("hidden");
+            spanMover.style.visibility = "visible";
         }
         //****
     }
@@ -301,6 +312,7 @@ function getPendingItem(squareId, elementId) {
     html += "-";
     html += elementId;
     html += "' class='item edit' onmouseenter='onMouseEnterItem(this)' onmouseleave='onMouseLeaveItem(this)'>";
+    html += "<span class='mover edit' style='visibility:hidden;'>&#9208;</span>";
     html += "<span class='plus edit'>+</span>";
     html += "<input type='text' id='input-element-";
     html += squareId;
