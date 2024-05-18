@@ -126,12 +126,12 @@ function getDivSquareEdit() {
     html += "<input type='text' id='input-title-0' class='title edit' ";
     html += "placeholder='Título' onkeypress='nextElementFromTitle(event,0,0);'>";
     html += "<div id='div-item-0-0' class='item edit' onmouseenter='onMouseEnterItem(this)' onmouseleave='onMouseLeaveItem(this)'>";
-    html += "<span class='mover edit' style='visibility:hidden;'>&#9208;</span>";
+    html += "<span class='ghost mover edit' style='visibility:hidden;'>&#8801</span>";
     html += "<span class='plus edit'>+</span>";
     html += "<input type='text' id='input-element-0-0' class='element edit' ";
     html += "placeholder='Elemento de lista' data-has-next-element='0' ";
     html += "onkeypress='nextElement(event,0,1);' onfocusin='onFocusInInput(this)' onfocusout='onFocusOutInput(this)'>";
-    html += "<span class='close hidden edit' onclick='deleteItem(this)' onmouseenter='onMouseEnterSpan(true)' onmouseleave='onMouseEnterSpan(false)'>x</span>";
+    html += "<span class='ghost close hidden edit' onclick='deleteItem(this)' onmouseenter='onMouseEnterSpan(true)' onmouseleave='onMouseEnterSpan(false)'>x</span>";
     html += "</div></div>";
     html += "<div id='div-done' class='square-done edit'>";
     html += "</div></div>";
@@ -148,59 +148,54 @@ function deleteItem(span) {
 }
 //reviewer
 function onMouseEnterItem(div) {
-    let input = div.getElementsByClassName("element")[0];
+    const input = div.getElementsByClassName("element")[0];
     if (!hasTextInInput(input)) {
         return;
     }
-    let spanClose = div.getElementsByClassName("close")[0];
-    let spanMover = div.getElementsByClassName("mover")[0];
+    const [spanMover, spanClose] = div.querySelectorAll(".ghost");
     if (!spanClose) {
         return;
     }
-    spanClose.classList.remove("hidden");
     spanMover.style.visibility = "visible";
+    spanClose.classList.remove("hidden");
 }
 //reviewer
 function onMouseLeaveItem(div) {
-    let spanClose = div.getElementsByClassName("close")[0];
-    let spanMover = div.getElementsByClassName("mover")[0];
+    const [spanMover, spanClose] = div.querySelectorAll(".ghost");
     if (!spanClose) {
         return;
     }
-    let input = div.getElementsByClassName("element")[0];
+    const input = div.getElementsByClassName("element")[0];
     if (input != document.activeElement) {
-        spanClose.classList.add("hidden");
         spanMover.style.visibility = "hidden";
+        spanClose.classList.add("hidden");
     }
 }
 //reviewer
 function onFocusInInput(input) {
-    let div = input.parentNode;
+    const div = input.parentNode;
     if (!hasTextInInput(input)) {
         return;
     }
-    let spanClose = div.getElementsByClassName("close")[0];
-    let spanMover = div.getElementsByClassName("mover")[0];
+    const [spanMover, spanClose] = div.querySelectorAll(".ghost");
     if (!spanClose) {
         return;
     }
-    spanClose.classList.remove("hidden");
     spanMover.style.visibility = "visible";
+    spanClose.classList.remove("hidden");
 }
 //reviewer
 function onFocusOutInput(input) {
-    let div = input.parentNode;
-    let spanClose = div.getElementsByClassName("close")[0];
-    let spanMover = div.getElementsByClassName("mover")[0];
+    const div = input.parentNode;
+    const [spanMover, spanClose] = div.querySelectorAll(".ghost");
     if (!spanClose) {
         return;
     }
-    console.log("indexOnFocusSpan", indexOnFocusSpan);
     if (indexOnFocusSpan) {
         return;
     }
-    spanClose.classList.add("hidden");
     spanMover.style.visibility = "hidden";
+    spanClose.classList.add("hidden");
 }
 //reviewer
 function hasTextInInput(input) {
@@ -209,7 +204,7 @@ function hasTextInInput(input) {
 }
 // reviewer
 function nextElementFromTitle(event, squareId, elementId) {
-    let element = getAnyElement(squareId, elementId);
+    const element = getAnyElement(squareId, elementId);
     detectEnter(event, element);
 }
 // reviewer
@@ -225,13 +220,13 @@ function getIdForAnyElement(element) {
 
 // reviewer
 function checkedItem(checkBox) {
-    let divItem = checkBox.parentNode.parentNode;
-    let inputTarget = checkBox.parentNode.nextSibling;
+    const divItem = checkBox.parentNode.parentNode;
+    const inputTarget = checkBox.parentNode.nextSibling;
     checkBox.classList.toggle("appearance");
     inputTarget.classList.toggle("line-through");
     //
-    let divDone = document.getElementById("div-done");
-    let divPending = document.getElementById("div-pending");
+    const divDone = document.getElementById("div-done");
+    const divPending = document.getElementById("div-pending");
     //
     inputTarget.readOnly = checkBox.checked;
     if (checkBox.checked) {
@@ -268,20 +263,19 @@ function appendChildToDivDone(div, itemPending) {
 }
 // reviewer
 function nextElement(event, squareId, elementId) {
-    let actualElement = event.target;
-    let hasNextElement = actualElement.getAttribute('data-has-next-element');
-    let nextElement = getAnyElement(squareId, elementId);
+    const actualElement = event.target;
+    const hasNextElement = actualElement.getAttribute('data-has-next-element');
+    const nextElement = getAnyElement(squareId, elementId);
     if (hasNextElement == "0") {
-        let parentActualElement = actualElement.parentNode.parentNode;
+        const parentActualElement = actualElement.parentNode.parentNode;
         parentActualElement.insertAdjacentHTML("beforeend", getPendingItem(squareId, elementId));
         actualElement.previousSibling.innerHTML = getInputCheckBox(false);
         actualElement.setAttribute('data-has-next-element', "1");
         //****
-        let spanClose = actualElement.parentNode.getElementsByClassName("close")[0];
-        let spanMover = actualElement.parentNode.getElementsByClassName("mover")[0];
+        const [spanMover, spanClose] = actualElement.parentNode.querySelectorAll(".ghost");
         if (spanClose) {
-            spanClose.classList.remove("hidden");
             spanMover.style.visibility = "visible";
+            spanClose.classList.remove("hidden");
         }
         //****
     }
@@ -298,7 +292,7 @@ function getInputCheckBox(checked) {
 
 // reviewer
 function detectEnter(event, element) {
-    let keycode = (event.keyCode ? event.keyCode : event.which);
+    const keycode = (event.keyCode ? event.keyCode : event.which);
     if (keycode == '13') {
         element.focus();
     }
@@ -312,7 +306,7 @@ function getPendingItem(squareId, elementId) {
     html += "-";
     html += elementId;
     html += "' class='item edit' onmouseenter='onMouseEnterItem(this)' onmouseleave='onMouseLeaveItem(this)'>";
-    html += "<span class='mover edit' style='visibility:hidden;'>&#9208;</span>";
+    html += "<span class='ghost mover edit' style='visibility:hidden;'>&#8801</span>";
     html += "<span class='plus edit'>+</span>";
     html += "<input type='text' id='input-element-";
     html += squareId;
@@ -327,7 +321,7 @@ function getPendingItem(squareId, elementId) {
     elementId = elementId + 1;
     html += elementId;
     html += ");' onfocusin='onFocusInInput(this)' onfocusout='onFocusOutInput(this)'>";
-    html += "<span class='close hidden edit' onclick='deleteItem(this)' onmouseenter='onMouseEnterSpan(true)' onmouseleave='onMouseEnterSpan(false)'>x</span>";
+    html += "<span class='ghost close hidden edit' onclick='deleteItem(this)' onmouseenter='onMouseEnterSpan(true)' onmouseleave='onMouseEnterSpan(false)'>x</span>";
     html += "</div>";
     return html;
 }
