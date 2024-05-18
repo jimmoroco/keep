@@ -126,7 +126,7 @@ function getDivSquareEdit() {
     html += "<input type='text' id='input-title-0' class='title edit' ";
     html += "placeholder='Título' onkeypress='nextElementFromTitle(event,0,0);'>";
     html += "<div id='div-item-0-0' class='item edit' onmouseenter='onMouseEnterItem(this)' onmouseleave='onMouseLeaveItem(this)'>";
-    html += "<span class='ghost mover edit' style='visibility:hidden;'>&#9208;</span>";
+    html += "<span class='ghost mover edit' style='visibility:hidden;'>&#8801</span>";
     html += "<span class='plus edit'>+</span>";
     html += "<input type='text' id='input-element-0-0' class='element edit' ";
     html += "placeholder='Elemento de lista' data-has-next-element='0' ";
@@ -306,7 +306,7 @@ function getPendingItem(squareId, elementId) {
     html += "-";
     html += elementId;
     html += "' class='item edit' onmouseenter='onMouseEnterItem(this)' onmouseleave='onMouseLeaveItem(this)'>";
-    html += "<span class='ghost mover edit' style='visibility:hidden;'>&#9208;</span>";
+    html += "<span class='ghost mover edit' style='visibility:hidden;'>&#8801</span>";
     html += "<span class='plus edit'>+</span>";
     html += "<input type='text' id='input-element-";
     html += squareId;
