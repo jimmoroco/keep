@@ -145,6 +145,10 @@ function onMouseEnterSpan(flag) {
 function deleteItem(span) {
     span.parentNode.parentNode.removeChild(span.parentNode);
     indexOnFocusSpan = false;
+    const divDone = document.getElementById("div-done");
+    if (divDone.innerHTML == "") {
+        document.getElementById("div-square-edit").removeChild(document.getElementById("hr-n"));
+    }
 }
 //reviewer
 function onMouseEnterItem(div) {
