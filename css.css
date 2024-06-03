@@ -144,6 +144,7 @@ body {
     width: 500px;
     background-color: var(--color-dark);
     border-color: white;
+    /* border-style: dotted; */
     border-radius: 10px;
     box-shadow: 0px 1px 10px rgba(0, 0, 0, 0.9);
 }
