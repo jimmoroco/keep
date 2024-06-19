@@ -4,6 +4,7 @@ let indexOnFocusSpan = false;
 
 let square;
 
+// reviewer // falta
 document.body.addEventListener("click", function (e) {
     let elementClicked = e.target;
     if (elementClicked.classList.contains('no-edit')) {
@@ -15,11 +16,13 @@ document.body.addEventListener("click", function (e) {
     if (elementClicked.classList.contains('edit')) {
         return;
     }
+    console.log("jim moroco-3");
     let inputElements = divContainerEdit.getElementsByClassName("element");
     for (let i = 0; i < inputElements.length; i++) {
         if (inputElements[i].value != "") {
             console.log("saveSquare")
             saveSquare();
+            document.getElementById("div-square-edit").setAttribute('style', 'display:none');
             return;
         }
     }
@@ -30,37 +33,28 @@ document.body.addEventListener("click", function (e) {
 // reviewer  // falta
 function saveSquare() {
     let inputTitle = document.getElementById(`input-title-${itemEdit}`);
-    console.log("inputTitle", inputTitle);
     let checkBoxElements = divContainerEdit.getElementsByClassName("checkbox-item");
     let inputElements = divContainerEdit.getElementsByClassName("element");
     let text = inputTitle.value + "¬";
     for (let i = 0; i < checkBoxElements.length; i++) {
-        console.log("checkBoxElements[i].value", checkBoxElements[i].value);
-        if (checkBoxElements[i].value != "") {
-
-        }
+        text += checkBoxElements[i].checked  + "¬"; 
         text += inputElements[i].value + "¬";
     }
-    console.log("text:", text);
     text = text.substring(0, text.length - 1);
-    console.log("text2:", text);
-    // let inputTitle = document.getElementById(`input-title-${itemEdit}`);
-    //itemEdit
-    //console.log("text:", text);
-    //document.getElementById("div-square-edit").classList.add("hidden");
-    //document.getElementById("div-container-edit").style.display = 'none';
-    divContainerEdit.classList.add("hidden");
-    divContainerEdit.classList.add("display-flex");
+    let numberqSq = +qSquares + 1;
+    localStorage.setItem(`square-${numberqSq}`, text);
+    localStorage.setItem("qSquares", numberqSq);
 }
 
 // reviewer , falta
+let qSquares;
 window.addEventListener("load", function () {
     let iconPlus = document.getElementById("icon-plus")
     iconPlus.addEventListener("click", function () {
         showSquareEdit();
     });
     /////////
-    let qSquares = localStorage.getItem("qSquares");
+    qSquares = localStorage.getItem("qSquares");
     if (qSquares == null) {
         localStorage.setItem("qSquares", 0);
     }
@@ -116,7 +110,6 @@ function showSquareEdit() {
     //target.setAttribute('data-show-square', "1");
     //divContainerEdit.classList.add("display-flex");
     divContainerEdit.classList.remove("hidden");
-    console.log("showSquareEdit")
 }
 // reviewer
 function getDivSquareEdit() {
@@ -125,7 +118,7 @@ function getDivSquareEdit() {
     html += "<div id='div-pending' class='square-pending edit'>";
     html += "<input type='text' id='input-title-0' class='title edit' ";
     html += "placeholder='Título' onkeypress='nextElementFromTitle(event,0,0);'>";
-    html += "<div id='div-item-0-0' class='item edit' onmouseenter='onMouseEnterItem(this)' onmouseleave='onMouseLeaveItem(this)'>";
+    html += "<div id='div-item-0-0' class='item edit' onmouseenter='onMouseEnterItem(this)' onmouseleave='onMouseLeaveItem(this)' draggable='true'>";
     html += "<span class='ghost mover edit' style='visibility:hidden;' onclick='moveItem(this)'>&#8801</span>";
     html += "<span class='plus edit'>+</span>";
     html += "<input type='text' id='input-element-0-0' class='element edit' ";
