@@ -126,7 +126,7 @@ function getDivSquareEdit() {
     html += "<input type='text' id='input-title-0' class='title edit' ";
     html += "placeholder='Título' onkeypress='nextElementFromTitle(event,0,0);'>";
     html += "<div id='div-item-0-0' class='item edit' onmouseenter='onMouseEnterItem(this)' onmouseleave='onMouseLeaveItem(this)'>";
-    html += "<span class='ghost mover edit' style='visibility:hidden;'>&#8801</span>";
+    html += "<span class='ghost mover edit' style='visibility:hidden;' onclick='moveItem(this)'>&#8801</span>";
     html += "<span class='plus edit'>+</span>";
     html += "<input type='text' id='input-element-0-0' class='element edit' ";
     html += "placeholder='Elemento de lista' data-has-next-element='0' ";
@@ -145,6 +145,10 @@ function onMouseEnterSpan(flag) {
 function deleteItem(span) {
     span.parentNode.parentNode.removeChild(span.parentNode);
     indexOnFocusSpan = false;
+    const divDone = document.getElementById("div-done");
+    if (divDone.innerHTML == "") {
+        document.getElementById("div-square-edit").removeChild(document.getElementById("hr-n"));
+    }
 }
 //reviewer
 function onMouseEnterItem(div) {
@@ -305,8 +309,11 @@ function getPendingItem(squareId, elementId) {
     html += squareId;
     html += "-";
     html += elementId;
-    html += "' class='item edit' onmouseenter='onMouseEnterItem(this)' onmouseleave='onMouseLeaveItem(this)'>";
-    html += "<span class='ghost mover edit' style='visibility:hidden;'>&#8801</span>";
+    html += "' class='item edit' onmouseenter='onMouseEnterItem(this)'";
+    html += " onmouseleave='onMouseLeaveItem(this)'";
+    html += " draggable='true'>";
+    html += "<span class='ghost mover edit' style='visibility:hidden;'";
+    html += " onclick='moveItem(this)'>&#8801</span>";
     html += "<span class='plus edit'>+</span>";
     html += "<input type='text' id='input-element-";
     html += squareId;
@@ -325,7 +332,12 @@ function getPendingItem(squareId, elementId) {
     html += "</div>";
     return html;
 }
-
+//reviewer
+function moveItem(spanMover){
+    const divItem = spanMover.parentNode;
+    //divItem.setAttribute('draggable', true);
+    divItem.setAttribute('style', 'transform:scale(1.09)');
+}
 function addEventsAtPendingItems() {
     let items = document.getElementsByClassName("pending-item");
     let litems = items.length;
