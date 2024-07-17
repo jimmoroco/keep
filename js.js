@@ -6,26 +6,33 @@ let square;
 
 // reviewer // falta
 document.body.addEventListener("click", function (e) {
+    console.log("jim moroco-0.0");
     let elementClicked = e.target;
     if (elementClicked.classList.contains('no-edit')) {
+        console.log("jim moroco-0");
         return;
     }
     if (divContainerEdit.classList.contains('hidden')) {
+        console.log("jim moroco-1");
         return;
     }
     if (elementClicked.classList.contains('edit')) {
+        console.log("jim moroco-2");
         return;
     }
     console.log("jim moroco-3");
     let inputElements = divContainerEdit.getElementsByClassName("element");
     for (let i = 0; i < inputElements.length; i++) {
+        console.log("jim moroco-4");
         if (inputElements[i].value != "") {
+            console.log("jim moroco-5");
             console.log("saveSquare")
             saveSquare();
             document.getElementById("div-square-edit").setAttribute('style', 'display:none');
             return;
         }
     }
+    console.log("jim moroco-6");
     // divContainerEdit.classList.add("edit-area");
     // divContainerEdit.classList.add("hidden");
 });
@@ -34,16 +41,23 @@ document.body.addEventListener("click", function (e) {
 function saveSquare() {
     let inputTitle = document.getElementById(`input-title-${itemEdit}`);
     let checkBoxElements = divContainerEdit.getElementsByClassName("checkbox-item");
-    let inputElements = divContainerEdit.getElementsByClassName("element");
+    console.log("checkBoxElements", checkBoxElements);
+    let inputElements = divContainerEdit.getElementsByClassName("element done");
+    console.log("inputElements", inputElements);
     let text = inputTitle.value + "¬";
-    for (let i = 0; i < checkBoxElements.length; i++) {
-        text += checkBoxElements[i].checked  + "¬"; 
-        text += inputElements[i].value + "¬";
+    for (let i = 0; i < inputElements.length; i++) {
+        text += checkBoxElements[i].checked + "¬";
+        if (inputElements[i].getAttribute('data-has-next-element') == "1") {
+            text += inputElements[i].value + "¬";
+        }
     }
     text = text.substring(0, text.length - 1);
+    console.log("text", text);
     let numberqSq = +qSquares + 1;
     localStorage.setItem(`square-${numberqSq}`, text);
     localStorage.setItem("qSquares", numberqSq);
+    let divContainer = document.getElementById("div-container");
+    addSquares(divContainer, text, numberqSq);
 }
 
 // reviewer , falta
@@ -74,11 +88,46 @@ window.addEventListener("load", function () {
 
 // revisar la línea del showSquereEdit, al parecer no va
 function addSquares(divContainer, squareItem, index) {
+    let squareItems = squareItem.split("¬");
+    console.log("squareItems", squareItems);
     let html = "";
-    //console.log("qSquares", qSquares);
-    html += `<div class='square square-${index}' onclick= showSquareEdit(this);>`; //  data-square='${qSquares}'
-    html += squareItem;
-    html += "</div>";
+    let i;
+    let hasDoneItems = false;
+    html += "<div class='square cursor-hand square-";
+    html += index;
+    html += "' onclick= showSquareEdit(this); readonly>";
+    html += "<div id='div-pending' class='square-pending'>";
+    html += "<input type='text' id='input-title-0' class='title cursor-hand' disabled value='";
+    html += squareItems[0];
+    html += "'>";
+    for (i = 1; i < squareItems.length; i = i + 2) {
+        if (squareItems[i] == "true") {
+            hasDoneItems = true;
+            break;
+        }
+        html += "<div class='item'>";
+        html += "<span class='plus'><input type='checkbox' class='checkbox-item cursor-hand appearance'></span>";
+        html += "<input type='text' disabled class='element cursor-hand' value='";
+        html += squareItems[i + 1];
+        html += "'>";
+        html += "</div>";
+    }
+    html += "</div>"; // end div-pending
+    if (hasDoneItems) {
+        html += "<hr id='hr-n'>";
+        html += "<div id='div-done' class='square-done'>";
+        for (let j = i; j < squareItems.length; j = j + 2) {
+            html += "<div class='item'>";
+            html += "<span class='plus'><input type='checkbox' class='checkbox-item cursor-hand' disabled checked></span>";
+            html += "<input type='text' class='element line-through' value='";
+            html += squareItems[j + 1];
+            html += "'>";
+            html += "</div>";
+            console.log("squareItems[j + 1];", squareItems[j + 1]);
+        }
+        html += "</div>"; // end div-done
+    }
+    html += "</div>"; // end square
     divContainer.insertAdjacentHTML("afterbegin", html);
 }
 
@@ -124,7 +173,7 @@ function getDivSquareEdit() {
     html += "<input type='text' id='input-element-0-0' class='element edit' ";
     html += "placeholder='Elemento de lista' data-has-next-element='0' ";
     html += "onkeypress='nextElement(event,0,1);' onfocusin='onFocusInInput(this)' onfocusout='onFocusOutInput(this)'>";
-    html += "<span class='ghost close hidden edit' onclick='deleteItem(this)' onmouseenter='onMouseEnterSpan(true)' onmouseleave='onMouseEnterSpan(false)'>x</span>";
+    html += "<span class='ghost close cursor-hand hidden edit' onclick='deleteItem(this)' onmouseenter='onMouseEnterSpan(true)' onmouseleave='onMouseEnterSpan(false)'>x</span>";
     html += "</div></div>";
     html += "<div id='div-done' class='square-done edit'>";
     html += "</div></div>";
@@ -267,14 +316,14 @@ function nextElement(event, squareId, elementId) {
         const parentActualElement = actualElement.parentNode.parentNode;
         parentActualElement.insertAdjacentHTML("beforeend", getPendingItem(squareId, elementId));
         actualElement.previousSibling.innerHTML = getInputCheckBox(false);
-        actualElement.setAttribute('data-has-next-element', "1");
-        //****
+        actualElement.classList.toggle("done");
+        actualElement.setAttribute('data-has-next-element', "1");        
+
         const [spanMover, spanClose] = actualElement.parentNode.querySelectorAll(".ghost");
         if (spanClose) {
             spanMover.style.visibility = "visible";
             spanClose.classList.remove("hidden");
         }
-        //****
     }
     detectEnter(event, nextElement);
 }
@@ -282,7 +331,7 @@ function nextElement(event, squareId, elementId) {
 function getInputCheckBox(checked) {
     let html = "";
     html += "<input type='checkbox' ";
-    html += "class='checkbox-item appearance edit' ";
+    html += "class='checkbox-item cursor-hand appearance edit' ";
     html += "onchange='checkedItem(this)'/>";
     return html;
 }
@@ -321,12 +370,14 @@ function getPendingItem(squareId, elementId) {
     elementId = elementId + 1;
     html += elementId;
     html += ");' onfocusin='onFocusInInput(this)' onfocusout='onFocusOutInput(this)'>";
-    html += "<span class='ghost close hidden edit' onclick='deleteItem(this)' onmouseenter='onMouseEnterSpan(true)' onmouseleave='onMouseEnterSpan(false)'>x</span>";
+    html += "<span class='ghost close cursor-hand hidden edit' ";
+    html += "onclick='deleteItem(this)' onmouseenter='onMouseEnterSpan(true)' ";
+    html += "onmouseleave='onMouseEnterSpan(false)'>x</span>";
     html += "</div>";
     return html;
 }
 //reviewer
-function moveItem(spanMover){
+function moveItem(spanMover) {
     const divItem = spanMover.parentNode;
     //divItem.setAttribute('draggable', true);
     divItem.setAttribute('style', 'transform:scale(1.09)');
