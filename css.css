@@ -46,6 +46,7 @@ body {
     font-weight: bold;
     color: white;
     margin-bottom: 10px;
+    margin-left: 11px;
     border-width: 0px;
     color: white;
     background-color: var(--color-dark);
@@ -65,6 +66,7 @@ body {
 .item {
     display: flex;
     margin-bottom: 8px;
+    margin-left: 1px;
 }
 
 .item-enter {
@@ -77,7 +79,6 @@ body {
     margin-left: auto;
     color: #757575;
     background-color: var(--color-dark);
-    cursor: pointer;
     font-size: larger;
 }
 
@@ -91,6 +92,7 @@ body {
     color: white;
     background-color: var(--color-dark);
     width: 90%;
+    padding-left: 7px;
 }
 
 .element:focus {
@@ -118,7 +120,6 @@ body {
     border-width: 0.100rem;
     border-style: solid;
     border-color: white;
-    cursor: pointer;
 }
 
 .checkbox-item:checked {
@@ -134,10 +135,14 @@ body {
 
 .square-edit {
     margin: 20px;
-    padding: 20px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    padding-right: 20px;
+    padding-left: 18px;
     width: 500px;
     background-color: var(--color-dark);
     border-color: white;
+    /* border-style: dotted; */
     border-radius: 10px;
     box-shadow: 0px 1px 10px rgba(0, 0, 0, 0.9);
 }
@@ -163,9 +168,18 @@ body {
     border-style: solid;
     border-color: white;
     border-radius: 10px;
-    cursor: pointer;
 }
 
+.mover {
+    padding-top: 1px;
+    color: white;
+    font-size: 15px;
+    margin-top: 1px;
+    margin-bottom: 2px;
+    margin-left: 0px;
+    margin-right: 4px;
+    cursor: move;
+}
 
 #txtTitle {
     border: none;
@@ -189,6 +203,9 @@ body {
     box-shadow: 0px 1px 10px rgba(0, 0, 0, 0.9);
     z-index: 100;
     background-color: var(--color-dark);
-    cursor: pointer;
     font-weight: bold;
+}
+
+.cursor-hand {
+    cursor: pointer;
 }
