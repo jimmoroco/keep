@@ -93,9 +93,13 @@ function addSquares(divContainer, squareItem, index) {
     let html = "";
     let i;
     let hasDoneItems = false;
-    html += "<div class='square cursor-hand square-";
-    html += index;
-    html += "' onclick= showSquareEdit(this); readonly>";
+    let squareId = `square-${index}`;
+    html += "<div class='square cursor-hand ";
+    html += squareId;
+    html += "' id = '";
+    html += squareId;
+    html += "' readonly>";
+    // html += "' onclick= 'showSquareEdit(this)' readonly>";
     html += "<div id='div-pending' class='square-pending'>";
     html += "<input type='text' id='input-title-0' class='title cursor-hand' disabled value='";
     html += squareItems[0];
@@ -129,6 +133,13 @@ function addSquares(divContainer, squareItem, index) {
     }
     html += "</div>"; // end square
     divContainer.insertAdjacentHTML("afterbegin", html);
+    //
+    document.getElementById(squareId).addEventListener("click", function () {
+        console.log("jim67");
+        showSquareEdit(this);
+    }, false);
+
+
 }
 
 function getValuesForSquare() {
@@ -147,6 +158,7 @@ function getHTMLSquareEdit(html) {
 
 // reviewer , falta
 function showSquareEdit() {
+    console.log("showSquareEdit000000000");
     numberSquare = 0;
     itemEdit = 0;
     divContainerEdit.innerHTML = getDivSquareEdit();
@@ -317,7 +329,7 @@ function nextElement(event, squareId, elementId) {
         parentActualElement.insertAdjacentHTML("beforeend", getPendingItem(squareId, elementId));
         actualElement.previousSibling.innerHTML = getInputCheckBox(false);
         actualElement.classList.toggle("done");
-        actualElement.setAttribute('data-has-next-element', "1");        
+        actualElement.setAttribute('data-has-next-element', "1");
 
         const [spanMover, spanClose] = actualElement.parentNode.querySelectorAll(".ghost");
         if (spanClose) {
