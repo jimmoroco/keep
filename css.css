@@ -209,3 +209,12 @@ body {
 .cursor-hand {
     cursor: pointer;
 }
+
+.footer-version{    
+    position: fixed;
+    bottom: 20px;
+    right: 50%;
+    color: white;
+    text-align: center;
+    font-size: 12px;
+}

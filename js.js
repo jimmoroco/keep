@@ -32,12 +32,6 @@ document.body.addEventListener("click", function (e) {
             return;
         }
     }
-<<<<<<< HEAD
-=======
-    console.log("jim moroco-6");
-    // divContainerEdit.classList.add("edit-area");
-    // divContainerEdit.classList.add("hidden");
->>>>>>> c7d237624ad3de996f2edca7bb80941cadd757dc
 });
 
 // reviewer  // falta
@@ -55,19 +49,16 @@ function saveSquare() {
         }
     }
     text = text.substring(0, text.length - 1);
-<<<<<<< HEAD
-    console.log("text2:", text);
     
-    divContainerEdit.classList.add("hidden");
-    divContainerEdit.classList.add("display-flex");
-=======
+    //divContainerEdit.classList.add("hidden");
+    //divContainerEdit.classList.add("display-flex");
+
     console.log("text", text);
     let numberqSq = +qSquares + 1;
     localStorage.setItem(`square-${numberqSq}`, text);
     localStorage.setItem("qSquares", numberqSq);
     let divContainer = document.getElementById("div-container");
     addSquares(divContainer, text, numberqSq);
->>>>>>> c7d237624ad3de996f2edca7bb80941cadd757dc
 }
 
 // reviewer , falta
@@ -101,11 +92,6 @@ function addSquares(divContainer, squareItem, index) {
     let squareItems = squareItem.split("¬");
     console.log("squareItems", squareItems);
     let html = "";
-<<<<<<< HEAD
-    html += `<div class='square square-${index}' onclick= showSquareEdit(this);>`; //  data-square='${qSquares}'
-    html += squareItem;
-    html += "</div>";
-=======
     let i;
     let hasDoneItems = false;
     let squareId = `square-${index}`;
@@ -147,15 +133,11 @@ function addSquares(divContainer, squareItem, index) {
         html += "</div>"; // end div-done
     }
     html += "</div>"; // end square
->>>>>>> c7d237624ad3de996f2edca7bb80941cadd757dc
     divContainer.insertAdjacentHTML("afterbegin", html);
     //
     document.getElementById(squareId).addEventListener("click", function () {
-        console.log("jim67");
         showSquareEdit(this);
     }, false);
-
-
 }
 
 function getValuesForSquare() {
@@ -339,21 +321,12 @@ function nextElement(event, squareId, elementId) {
         actualElement.previousSibling.innerHTML = getInputCheckBox(false);
         actualElement.classList.toggle("done");
         actualElement.setAttribute('data-has-next-element', "1");
-<<<<<<< HEAD
-        /////
-        let spanClose = actualElement.parentNode.getElementsByClassName("close")[0];
-=======
 
         const [spanMover, spanClose] = actualElement.parentNode.querySelectorAll(".ghost");
->>>>>>> c7d237624ad3de996f2edca7bb80941cadd757dc
         if (spanClose) {
             spanMover.style.visibility = "visible";
             spanClose.classList.remove("hidden");
         }
-<<<<<<< HEAD
-        /////
-=======
->>>>>>> c7d237624ad3de996f2edca7bb80941cadd757dc
     }
     detectEnter(event, nextElement);
 }
