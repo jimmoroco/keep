@@ -132,6 +132,7 @@ function addSquares(divContainer, squareItem, index) {
         }
         html += "</div>"; // end div-done
     }
+    html += "<div class='trash' onmouseenter=onMouseEnterItem(this)' onmouseleave='onMouseLeaveItem(this)'>&#128465</div>"; // end square
     html += "</div>"; // end square
     divContainer.insertAdjacentHTML("afterbegin", html);
     //
