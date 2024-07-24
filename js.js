@@ -23,8 +23,6 @@ document.body.addEventListener("click", function (e) {
             return;
         }
     }
-    // divContainerEdit.classList.add("edit-area");
-    // divContainerEdit.classList.add("hidden");
 });
 
 // reviewer  // falta
@@ -44,11 +42,7 @@ function saveSquare() {
     console.log("text:", text);
     text = text.substring(0, text.length - 1);
     console.log("text2:", text);
-    // let inputTitle = document.getElementById(`input-title-${itemEdit}`);
-    //itemEdit
-    //console.log("text:", text);
-    //document.getElementById("div-square-edit").classList.add("hidden");
-    //document.getElementById("div-container-edit").style.display = 'none';
+    
     divContainerEdit.classList.add("hidden");
     divContainerEdit.classList.add("display-flex");
 }
@@ -81,7 +75,6 @@ window.addEventListener("load", function () {
 // revisar la línea del showSquereEdit, al parecer no va
 function addSquares(divContainer, squareItem, index) {
     let html = "";
-    //console.log("qSquares", qSquares);
     html += `<div class='square square-${index}' onclick= showSquareEdit(this);>`; //  data-square='${qSquares}'
     html += squareItem;
     html += "</div>";
@@ -89,16 +82,13 @@ function addSquares(divContainer, squareItem, index) {
 }
 
 function getValuesForSquare() {
-    //listas[i].split("¬"); ~
     let title = document.getElementById("numberSquare");
-    // **let squareItem = divSquareEdit.innerHTML;
     squareItem = squareItem.replace(/type="checkbox" class=/g, `type="checkbox" disabled="true" style="cursor:pointer" class=`);
     return squareItem;
 }
 
 function getHTMLSquareEdit(html) {
     html = html.replace(/contenteditable="false"/g, `contenteditable="true"`);
-    //squareItem = squareItem.replace(/type="checkbox" disabled="true" style="cursor:pointer" class=/g, `type="checkbox" class=`);
     return html;
 }
 
@@ -111,10 +101,6 @@ function showSquareEdit() {
     let inputTitle0 = document.getElementById("input-title-0");
     inputTitle0.focus();
 
-
-    //    let showSquare = target.getAttribute('data-show-square');
-    //target.setAttribute('data-show-square', "1");
-    //divContainerEdit.classList.add("display-flex");
     divContainerEdit.classList.remove("hidden");
     console.log("showSquareEdit")
 }
@@ -267,12 +253,12 @@ function nextElement(event, squareId, elementId) {
         parentActualElement.insertAdjacentHTML("beforeend", getPendingItem(squareId, elementId));
         actualElement.previousSibling.innerHTML = getInputCheckBox(false);
         actualElement.setAttribute('data-has-next-element', "1");
-        //****
+        /////
         let spanClose = actualElement.parentNode.getElementsByClassName("close")[0];
         if (spanClose) {
             spanClose.classList.remove("hidden");
         }
-        //****
+        /////
     }
     detectEnter(event, nextElement);
 }
@@ -325,7 +311,6 @@ function addEventsAtPendingItems() {
     let litems = items.length;
     for (let i = 0; i < litems; i++) {
         items[i].addEventListener("click", function () {
-            //console.log("moroco" + i);
         });
     }
 }
