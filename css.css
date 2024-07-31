@@ -225,3 +225,7 @@ body {
     text-align: center;
     font-size: 12px;
 }
+
+.hidden {
+    visibility: hidden;
+}

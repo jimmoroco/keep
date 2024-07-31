@@ -49,11 +49,10 @@ function saveSquare() {
         }
     }
     text = text.substring(0, text.length - 1);
-    
+
     //divContainerEdit.classList.add("hidden");
     //divContainerEdit.classList.add("display-flex");
 
-    console.log("text", text);
     let numberqSq = +qSquares + 1;
     localStorage.setItem(`square-${numberqSq}`, text);
     localStorage.setItem("qSquares", numberqSq);
@@ -102,7 +101,11 @@ function addSquares(divContainer, squareItem, index) {
     html += "' readonly>";
     // html += "' onclick= 'showSquareEdit(this)' readonly>";
     html += "<div id='div-pending' class='square-pending'>";
-    html += "<input type='text' id='input-title-0' class='title cursor-hand' disabled value='";
+    html += "<input type='text' ";
+    html += "id='input-title-";
+    html += squareId;
+    html += "' class='title cursor-hand' ";
+    html += "disabled value='";
     html += squareItems[0];
     html += "'>";
     for (i = 1; i < squareItems.length; i = i + 2) {
@@ -111,11 +114,13 @@ function addSquares(divContainer, squareItem, index) {
             break;
         }
         html += "<div class='item'>";
-        html += "<span class='plus'><input type='checkbox' class='checkbox-item cursor-hand appearance'></span>";
-        html += "<input type='text' disabled class='element cursor-hand' value='";
+        html += "<span class='plus'><input type='checkbox' ";
+        html += "class='checkbox-item cursor-hand appearance'></span>";
+        html += "<input type='text' disabled class='element cursor-hand' ";
+        html += "value='";
         html += squareItems[i + 1];
         html += "'>";
-        html += "</div>";
+        html += "</div>"; // end class item
     }
     html += "</div>"; // end div-pending
     if (hasDoneItems) {
@@ -123,22 +128,46 @@ function addSquares(divContainer, squareItem, index) {
         html += "<div id='div-done' class='square-done'>";
         for (let j = i; j < squareItems.length; j = j + 2) {
             html += "<div class='item'>";
-            html += "<span class='plus'><input type='checkbox' class='checkbox-item cursor-hand' disabled checked></span>";
+            html += "<span class='plus'><input type='checkbox' ";
+            html += "class='checkbox-item cursor-hand' ";
+            html += "disabled checked></span>";
             html += "<input type='text' class='element line-through' value='";
             html += squareItems[j + 1];
             html += "'>";
-            html += "</div>";
+            html += "</div>"; // end class item
             console.log("squareItems[j + 1];", squareItems[j + 1]);
         }
         html += "</div>"; // end div-done
     }
-    html += "<div class='trash' onmouseenter=onMouseEnterItem(this)' onmouseleave='onMouseLeaveItem(this)'>&#128465</div>"; // end square
+    html += "<div class='trash no-edit' ";
+    html += "onmouseenter='enterTrash(this)' ";
+    html += "onmouseleave='leaveTrash(this)'>";
+    html += "<span style='visibility:hidden' ";
+    html += "onclick='deleteSquare(this)'>&#128465</span>";
+    html += "</div>"; // end class trash
     html += "</div>"; // end square
     divContainer.insertAdjacentHTML("afterbegin", html);
     //
-    document.getElementById(squareId).addEventListener("click", function () {
-        showSquareEdit(this);
-    }, false);
+    // document.getElementById(squareId).addEventListener("click", function () {
+    //     showSquareEdit(this);
+    // }, false);
+}
+
+function deleteSquare(span){
+    let divSquare = span.parentNode.parentNode;
+    let idDivSquare = divSquare.id;
+    squareItem = localStorage.getItem(idDivSquare);
+    localStorage.setItem(`r-${idDivSquare}`, squareItem);
+    localStorage.removeItem(idDivSquare);
+    divSquare.remove();
+}
+
+function enterTrash(div) {
+    div.firstChild.style.visibility = "visible";
+}
+
+function leaveTrash(div) {
+    div.firstChild.style.visibility = "hidden";
 }
 
 function getValuesForSquare() {
