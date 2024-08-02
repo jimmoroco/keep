@@ -15,6 +15,11 @@ body {
     height: 99vh;
 }
 
+[contentEditable=true]:empty:before {
+    content: attr(placeholder);
+    opacity: 0.6;
+}
+
 .search {
     display: flex;
     justify-content: center;
