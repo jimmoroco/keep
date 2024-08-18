@@ -9,10 +9,12 @@ document.body.addEventListener("click", function (e) {
     console.log("jim moroco-0.0");
     let elementClicked = e.target;
     if (elementClicked.classList.contains('no-edit')) {
+        console.log(elementClicked);
         console.log("jim moroco-0");
         return;
     }
     if (divContainerEdit.classList.contains('hidden')) {
+        console.log(elementClicked);
         console.log("jim moroco-1");
         return;
     }
@@ -95,15 +97,13 @@ function addSquares(divContainer, squareItem, index) {
     let i;
     let hasDoneItems = false;
     let squareId = `square-${index}`;
-    html += "<div class='square cursor-hand ";
+    html += "<div class='square cursor-hand no-edit ";
     html += squareId;
     html += "' id = '";
     html += squareId;
     html += "' readonly>";
-    // html += "' onclick= 'showSquareEdit(this)' readonly>";
-    html += "<div id='div-pending' class='square-pending'>";
-    html += "<div ";
-    html += "id='input-title-";
+    html += "<div id='div-pending' class='square-pending no-edit'>";
+    html += "<div id='input-title-";
     html += squareId;
     html += "' class='no-edit title cursor-hand' ";
     html += "disabled>";
@@ -114,7 +114,7 @@ function addSquares(divContainer, squareItem, index) {
             hasDoneItems = true;
             break;
         }
-        html += "<div class='item'>";
+        html += "<div class='item no-edit'>";
         html += "<span class='plus'><input type='checkbox' ";
         html += "class='checkbox-item cursor-hand appearance'></span>";
         html += "<div disabled class='no-edit element cursor-hand'>";
@@ -124,12 +124,12 @@ function addSquares(divContainer, squareItem, index) {
     }
     html += "</div>"; // end div-pending
     if (hasDoneItems) {
-        html += "<hr id='hr-n'>";
-        html += "<div id='div-done' class='square-done'>";
+        html += "<hr id='hr-n' class='no-edit'>";
+        html += "<div id='div-done' class='square-done no-edit'>";
         for (let j = i; j < squareItems.length; j = j + 2) {
-            html += "<div class='item'>";
+            html += "<div class='item no-edit'>";
             html += "<span class='plus'><input type='checkbox' ";
-            html += "class='checkbox-item cursor-hand' ";
+            html += "class='checkbox-item cursor-hand no-edit' ";
             html += "disabled checked></span>";
             html += "<div class='no-edit element line-through'>";
             html += squareItems[j + 1];
