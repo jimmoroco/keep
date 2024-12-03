@@ -1,23 +1,19 @@
 let divContainerEdit;
 let itemEdit;
 let indexOnFocusSpan = false;
-
 let square;
 
-// reviewer , falta
+// refactor
 let qSquares;
 window.addEventListener("load", function () {
     qSquares = localStorage.getItem("qSquares");
     if (qSquares == null) {
         localStorage.setItem("qSquares", 0);
     }
-    /////////
     let iconPlus = document.getElementById("icon-plus")
     iconPlus.addEventListener("click", function () {
-        //showSquareEdit(qSquares + 1);
         showSquareEdit(0);
     });
-    /////////
     if (qSquares > 0) {
         let divContainer = document.getElementById("div-container");
         for (let index = 1; index <= qSquares; index++) {
@@ -26,58 +22,38 @@ window.addEventListener("load", function () {
     }
     divContainerEdit = document.getElementById("div-container-edit");
 });
-
-// reviewer // falta
+// refactor
 document.body.addEventListener("click", function (e) {
-    console.log("jim moroco-0.0");
     let elementClicked = e.target;
-    console.log("elementClicked", elementClicked);
     let itemId;
     if (elementClicked.classList.contains('no-edit')) {
         if (elementClicked.hasAttribute("data-id")) {
-            console.log("humalla");
             itemId = elementClicked.getAttribute("data-id");
             let divContainer = document.getElementById("div-container");
             addSquares(divContainer, itemId);
-            //showSquareEdit(itemId);
         }
-
-
-
-        console.log(elementClicked);
-        console.log("jim moroco-0");
         return;
     }
     if (divContainerEdit.classList.contains('hidden')) {
-        console.log(elementClicked);
-        console.log("jim moroco-1");
         return;
     }
     if (elementClicked.classList.contains('edit')) {
-        console.log("jim moroco-2");
         return;
     }
-    console.log("jim moroco-3");
     let inputElements = divContainerEdit.getElementsByClassName("element");
     for (let i = 0; i < inputElements.length; i++) {
-        console.log("jim moroco-4");
         if (inputElements[i].value != "") {
-            console.log("jim moroco-5");
-            console.log("saveSquare")
             saveSquare();
             document.getElementById("div-square-edit").setAttribute('style', 'display:none');
             return;
         }
     }
 });
-
-// reviewer  // falta
+// refactor
 function saveSquare() {
     let divTitle = document.getElementById(`input-title-${itemEdit}`);
     let checkBoxElements = divContainerEdit.getElementsByClassName("checkbox-item");
-    console.log("checkBoxElements", checkBoxElements);
     let divElements = divContainerEdit.getElementsByClassName("element done");
-    console.log("divElements", divElements);
     let text = divTitle.innerText + "¬";
     for (let i = 0; i < divElements.length; i++) {
         text += checkBoxElements[i].checked + "¬";
@@ -86,24 +62,15 @@ function saveSquare() {
         }
     }
     text = text.substring(0, text.length - 1);
-
-    //divContainerEdit.classList.add("hidden");
-    //divContainerEdit.classList.add("display-flex");
-
     let numberqSq = +qSquares + 1;
     localStorage.setItem(`square-${numberqSq}`, text);
     localStorage.setItem("qSquares", numberqSq);
     let divContainer = document.getElementById("div-container");
     addSquares(divContainer, numberqSq);
 }
-
-// revisar la línea del showSquereEdit, al parecer no va
+// refactor
 function addSquares(divContainer, index) {
-    console.log("jim111111111", divContainer);
-    console.log("jim1.55555", index);
     let squareItem = localStorage.getItem(`square-${index}`);
-    console.log("jim1.squareItem", squareItem);
-    console.log("jim222222222", squareItem);
     if (!squareItem) {
         return;
     }
@@ -200,12 +167,7 @@ function addSquares(divContainer, index) {
     html += "</div>"; // end class trash
     html += "</div>"; // end square
     divContainer.insertAdjacentHTML("afterbegin", html);
-    //
-    // document.getElementById(squareId).addEventListener("click", function () {
-    //     showSquareEdit(this);
-    // }, false);
 }
-
 function deleteSquare(span) {
     let divSquare = span.parentNode.parentNode;
     let idDivSquare = divSquare.id;
@@ -214,39 +176,30 @@ function deleteSquare(span) {
     localStorage.removeItem(idDivSquare);
     divSquare.remove();
 }
-
 function enterTrash(div) {
     div.firstChild.style.visibility = "visible";
 }
-
 function leaveTrash(div) {
     div.firstChild.style.visibility = "hidden";
 }
-
 function getValuesForSquare() {
     let title = document.getElementById("numberSquare");
     squareItem = squareItem.replace(/type="checkbox" class=/g, `type="checkbox" disabled="true" style="cursor:pointer" class=`);
     return squareItem;
 }
-
 function getHTMLSquareEdit(html) {
     html = html.replace(/contenteditable="false"/g, `contenteditable="true"`);
     return html;
 }
-
-// reviewer , falta
+// refactor
 function showSquareEdit(item) {
-    console.log("showSquareEdit67", item);
     itemEdit = item;
     divContainerEdit.innerHTML = getDivSquareEdit(item);
     divContainerEdit.classList.remove("hidden");
 
     let inputTitle0 = document.getElementById(`input-title-${item}`);
     inputTitle0.focus();
-
-
 }
-// reviewer
 function getDivSquareEdit(item) {
     let html = "";
     html += "<div id='div-square-edit' class='square-edit edit'>";
@@ -280,11 +233,9 @@ function getDivSquareEdit(item) {
     html += "</div></div>";
     return html;
 }
-//reviewer
 function onMouseEnterSpan(flag) {
     indexOnFocusSpan = flag;
 }
-//reviewer
 function deleteItem(span) {
     span.parentNode.parentNode.removeChild(span.parentNode);
     indexOnFocusSpan = false;
@@ -293,7 +244,6 @@ function deleteItem(span) {
         document.getElementById("div-square-edit").removeChild(document.getElementById("hr-n"));
     }
 }
-//reviewer
 function onMouseEnterItem(div) {
     const input = div.getElementsByClassName("element")[0];
     if (!hasTextInInput(input)) {
@@ -306,7 +256,6 @@ function onMouseEnterItem(div) {
     spanMover.style.visibility = "visible";
     spanClose.classList.remove("hidden");
 }
-//reviewer
 function onMouseLeaveItem(div) {
     const [spanMover, spanClose] = div.querySelectorAll(".ghost");
     if (!spanClose) {
@@ -318,7 +267,6 @@ function onMouseLeaveItem(div) {
         spanClose.classList.add("hidden");
     }
 }
-//reviewer
 function onFocusInInput(input) {
     const div = input.parentNode;
     if (!hasTextInInput(input)) {
@@ -331,7 +279,6 @@ function onFocusInInput(input) {
     spanMover.style.visibility = "visible";
     spanClose.classList.remove("hidden");
 }
-//reviewer
 function onFocusOutInput(input) {
     const div = input.parentNode;
     const [spanMover, spanClose] = div.querySelectorAll(".ghost");
@@ -344,39 +291,29 @@ function onFocusOutInput(input) {
     spanMover.style.visibility = "hidden";
     spanClose.classList.add("hidden");
 }
-//reviewer
 function hasTextInInput(input) {
     let hasNextElement = input.getAttribute('data-has-next-element');
     return hasNextElement == "1";
 }
-// reviewer
 function nextElementFromTitle(event, squareId, elementId) {
     const element = getAnyElement(squareId, elementId);
-    console.log("element jim", element);
     detectEnter(event, element);
 }
-// reviewer
 function getAnyElement(squareId, elementId) {
-    console.log("id element", `input-element-${squareId}-${elementId}`);
     return document.getElementById(`input-element-${squareId}-${elementId}`);
 }
-// reviewer
 function getIdForAnyElement(element) {
     let elementId = element.id;
     let indexStart = elementId.lastIndexOf('-') + 1;
     return +elementId.substring(indexStart);
 }
-
-// reviewer
 function checkedItem(checkBox) {
     const divItem = checkBox.parentNode.parentNode;
     const inputTarget = checkBox.parentNode.nextSibling;
     checkBox.classList.toggle("appearance");
     inputTarget.classList.toggle("line-through");
-    //
     const divDone = document.getElementById("div-done");
     const divPending = document.getElementById("div-pending");
-    //
     inputTarget.readOnly = checkBox.checked;
     if (checkBox.checked) {
         divPending.removeChild(divItem);
@@ -392,7 +329,6 @@ function checkedItem(checkBox) {
         }
     }
 }
-// reviewer
 function appendChildToDivDone(div, itemPending) {
     let items = div.getElementsByClassName("item");
     let id = getIdForAnyElement(itemPending);
@@ -410,7 +346,6 @@ function appendChildToDivDone(div, itemPending) {
     }
     div.insertBefore(itemPending, null);
 }
-// reviewer
 function nextElement(event, squareId, elementId) {
     const actualElement = event.target;
     const hasNextElement = actualElement.getAttribute('data-has-next-element');
@@ -430,7 +365,6 @@ function nextElement(event, squareId, elementId) {
     }
     detectEnter(event, nextElement);
 }
-// reviewer
 function getInputCheckBox(checked) {
     let html = "";
     html += "<input type='checkbox' ";
@@ -438,18 +372,12 @@ function getInputCheckBox(checked) {
     html += "onchange='checkedItem(this)'/>";
     return html;
 }
-
-// reviewer
 function detectEnter(event, element) {
-    console.log("ariadne");
-    console.log(element);
     const keycode = (event.keyCode ? event.keyCode : event.which);
     if (keycode == '13') {
         element.focus();
     }
 }
-
-// reviewer
 function getPendingItem(squareId, elementId) {
     let html = "";
     html += "<div id='div-item-";
@@ -485,10 +413,8 @@ function getPendingItem(squareId, elementId) {
     html += "</div>";
     return html;
 }
-//reviewer
 function moveItem(spanMover) {
     const divItem = spanMover.parentNode;
-    //divItem.setAttribute('draggable', true);
     divItem.setAttribute('style', 'transform:scale(1.09)');
 }
 function addEventsAtPendingItems() {
