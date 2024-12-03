@@ -4,11 +4,46 @@ let indexOnFocusSpan = false;
 
 let square;
 
+// reviewer , falta
+let qSquares;
+window.addEventListener("load", function () {
+    qSquares = localStorage.getItem("qSquares");
+    if (qSquares == null) {
+        localStorage.setItem("qSquares", 0);
+    }
+    /////////
+    let iconPlus = document.getElementById("icon-plus")
+    iconPlus.addEventListener("click", function () {
+        //showSquareEdit(qSquares + 1);
+        showSquareEdit(0);
+    });
+    /////////
+    if (qSquares > 0) {
+        let divContainer = document.getElementById("div-container");
+        for (let index = 1; index <= qSquares; index++) {
+            addSquares(divContainer, index);
+        }
+    }
+    divContainerEdit = document.getElementById("div-container-edit");
+});
+
 // reviewer // falta
 document.body.addEventListener("click", function (e) {
     console.log("jim moroco-0.0");
     let elementClicked = e.target;
+    console.log("elementClicked", elementClicked);
+    let itemId;
     if (elementClicked.classList.contains('no-edit')) {
+        if (elementClicked.hasAttribute("data-id")) {
+            console.log("humalla");
+            itemId = elementClicked.getAttribute("data-id");
+            let divContainer = document.getElementById("div-container");
+            addSquares(divContainer, itemId);
+            //showSquareEdit(itemId);
+        }
+
+
+
         console.log(elementClicked);
         console.log("jim moroco-0");
         return;
@@ -59,40 +94,20 @@ function saveSquare() {
     localStorage.setItem(`square-${numberqSq}`, text);
     localStorage.setItem("qSquares", numberqSq);
     let divContainer = document.getElementById("div-container");
-    addSquares(divContainer, text, numberqSq);
+    addSquares(divContainer, numberqSq);
 }
 
-// reviewer , falta
-let qSquares;
-window.addEventListener("load", function () {
-    qSquares = localStorage.getItem("qSquares");
-    if (qSquares == null) {
-        localStorage.setItem("qSquares", 0);
-    }
-    /////////
-    let iconPlus = document.getElementById("icon-plus")
-    iconPlus.addEventListener("click", function () {
-        //showSquareEdit(qSquares + 1);
-        showSquareEdit(0);
-    });
-    /////////
-    if (qSquares > 0) {
-        let squareItem;
-        let divContainer = document.getElementById("div-container");
-        for (let index = 1; index <= qSquares; index++) {
-            squareItem = localStorage.getItem(`square-${index}`);
-            if (squareItem) {
-                addSquares(divContainer, squareItem, index);
-            }
-        }
-    }
-    divContainerEdit = document.getElementById("div-container-edit");
-});
-
 // revisar la línea del showSquereEdit, al parecer no va
-function addSquares(divContainer, squareItem, index) {
+function addSquares(divContainer, index) {
+    console.log("jim111111111", divContainer);
+    console.log("jim1.55555", index);
+    let squareItem = localStorage.getItem(`square-${index}`);
+    console.log("jim1.squareItem", squareItem);
+    console.log("jim222222222", squareItem);
+    if (!squareItem) {
+        return;
+    }
     let squareItems = squareItem.split("¬");
-    console.log("squareItems", squareItems);
     let html = "";
     let i;
     let hasDoneItems = false;
@@ -101,12 +116,19 @@ function addSquares(divContainer, squareItem, index) {
     html += squareId;
     html += "' id = '";
     html += squareId;
-    html += "' readonly>";
-    html += "<div id='div-pending' class='square-pending no-edit'>";
+    html += "' data-id=";
+    html += index;
+    html += " readonly>";
+    html += "<div id='div-pending' class='square-pending no-edit' ";
+    html += " data-id=";
+    html += index;
+    html += ">";
     html += "<div id='input-title-";
     html += squareId;
     html += "' class='no-edit title cursor-hand' ";
-    html += "disabled>";
+    html += " data-id=";
+    html += index;
+    html += " disabled>";
     html += squareItems[0];
     html += "</div>";
     for (i = 1; i < squareItems.length; i = i + 2) {
@@ -114,28 +136,59 @@ function addSquares(divContainer, squareItem, index) {
             hasDoneItems = true;
             break;
         }
-        html += "<div class='item no-edit'>";
-        html += "<span class='plus'><input type='checkbox' ";
-        html += "class='checkbox-item cursor-hand appearance'></span>";
-        html += "<div disabled class='no-edit element cursor-hand'>";
+        html += "<div class='item no-edit'";
+        html += " data-id=";
+        html += index;
+        html += ">";
+        html += "<span class='plus'";
+        html += " data-id=";
+        html += index;
+        html += ">";
+        html += "<input type='checkbox' ";
+        html += "class='checkbox-item cursor-hand appearance'";
+        html += " data-id=";
+        html += index;
+        html += ">";
+        html += "</span>";
+        html += "<div disabled class='no-edit element cursor-hand'";
+        html += " data-id=";
+        html += index;
+        html += ">";
         html += squareItems[i + 1];
         html += "</div>";
         html += "</div>"; // end class item
     }
     html += "</div>"; // end div-pending
     if (hasDoneItems) {
-        html += "<hr id='hr-n' class='no-edit'>";
-        html += "<div id='div-done' class='square-done no-edit'>";
+        html += "<hr id='hr-n' class='no-edit'";
+        html += " data-id=";
+        html += index;
+        html += ">";
+        html += "<div id='div-done' class='square-done no-edit'";
+        html += " data-id=";
+        html += index;
+        html += ">";
         for (let j = i; j < squareItems.length; j = j + 2) {
-            html += "<div class='item no-edit'>";
-            html += "<span class='plus'><input type='checkbox' ";
-            html += "class='checkbox-item cursor-hand no-edit' ";
-            html += "disabled checked></span>";
-            html += "<div class='no-edit element line-through'>";
+            html += "<div class='item no-edit'";
+            html += " data-id=";
+            html += index;
+            html += ">";
+            html += "<span class='plus'";
+            html += " data-id=";
+            html += index;
+            html += ">";
+            html += "<input type='checkbox' ";
+            html += "class='checkbox-item cursor-hand no-edit'";
+            html += " data-id=";
+            html += index;
+            html += " disabled checked></span>";
+            html += "<div class='no-edit element line-through'";
+            html += " data-id=";
+            html += index;
+            html += ">";
             html += squareItems[j + 1];
             html += "</div>";
             html += "</div>"; // end class item
-            console.log("squareItems[j + 1];", squareItems[j + 1]);
         }
         html += "</div>"; // end div-done
     }
@@ -183,7 +236,7 @@ function getHTMLSquareEdit(html) {
 
 // reviewer , falta
 function showSquareEdit(item) {
-    console.log("showSquareEdit", item);    
+    console.log("showSquareEdit67", item);
     itemEdit = item;
     divContainerEdit.innerHTML = getDivSquareEdit(item);
     divContainerEdit.classList.remove("hidden");
@@ -191,7 +244,7 @@ function showSquareEdit(item) {
     let inputTitle0 = document.getElementById(`input-title-${item}`);
     inputTitle0.focus();
 
-    
+
 }
 // reviewer
 function getDivSquareEdit(item) {
