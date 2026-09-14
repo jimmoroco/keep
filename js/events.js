@@ -1,24 +1,24 @@
 // events.js — handlers de eventos
 
-let divContainerEdit;
-let activeSquareId;
-let isMouseOverCloseSpan = false;
+let editContainer;
+let editingSquareId;
+let isHoveringCloseBtn = false;
 
 // ── Inicialización ──────────────────────────────────────────────
 
 function initEvents() {
-    divContainerEdit = document.getElementById("div-container-edit");
+    editContainer = document.getElementById("div-container-edit");
 
     document.getElementById("icon-plus").addEventListener("click", function () {
         openEditPanel(0);
     });
 
-    document.body.addEventListener("click", onBodyClick);
+    document.body.addEventListener("click", onDocumentClick);
 }
 
 // ── Clicks globales ─────────────────────────────────────────────
 
-function onBodyClick(e) {
+function onDocumentClick(e) {
     const elementClicked = e.target;
 
     // Click en una tarjeta en modo lectura: abrir editor
@@ -31,11 +31,11 @@ function onBodyClick(e) {
         return;
     }
 
-    if (divContainerEdit.classList.contains("hidden")) return;
+    if (editContainer.classList.contains("hidden")) return;
     if (elementClicked.classList.contains("edit")) return;
 
     // Click fuera del panel de edición: guardar si hay contenido
-    const inputElements = divContainerEdit.getElementsByClassName("element");
+    const inputElements = editContainer.getElementsByClassName("element");
     for (let i = 0; i < inputElements.length; i++) {
         if (inputElements[i].innerText.trim() !== "") {
             saveSquare();
@@ -48,18 +48,17 @@ function onBodyClick(e) {
 // ── Panel de edición ────────────────────────────────────────────
 
 function openEditPanel(squareId) {
-    activeSquareId = squareId;
-    divContainerEdit.innerHTML = renderEditPanel(squareId);
-    divContainerEdit.classList.remove("hidden");
+    editingSquareId = squareId;
+    editContainer.innerHTML = renderEditPanel(squareId);
+    editContainer.classList.remove("hidden");
 
-    const titleInput = document.getElementById(`input-title-${squareId}`);
-    titleInput.focus();
+    document.getElementById(`input-title-${squareId}`).focus();
 }
 
 function saveSquare() {
-    const titleEl = document.getElementById(`input-title-${activeSquareId}`);
-    const checkBoxes = Array.from(divContainerEdit.getElementsByClassName("checkbox-item"));
-    const itemEls = Array.from(divContainerEdit.getElementsByClassName("element done"));
+    const titleEl = document.getElementById(`input-title-${editingSquareId}`);
+    const checkBoxes = Array.from(editContainer.getElementsByClassName("checkbox-item"));
+    const itemEls = Array.from(editContainer.getElementsByClassName("element done"));
 
     const items = itemEls
         .filter(el => el.getAttribute("data-has-next-element") === "1")
@@ -119,7 +118,7 @@ function checkedItem(checkBox) {
         }
         divDone.appendChild(divItem);
     } else {
-        insertItemInOrder(divPending, divItem);
+        restoreItemToPending(divPending, divItem);
         if (divDone.innerHTML.trim() === "") {
             const hr = document.getElementById("hr-n");
             if (hr) hr.remove();
@@ -129,7 +128,7 @@ function checkedItem(checkBox) {
 
 function deleteItem(span) {
     span.parentNode.remove();
-    isMouseOverCloseSpan = false;
+    isHoveringCloseBtn = false;
     const divDone = document.getElementById("div-done");
     if (divDone && divDone.innerHTML.trim() === "") {
         const hr = document.getElementById("hr-n");
@@ -145,7 +144,7 @@ function moveItem(spanMover) {
 
 function onMouseEnterItem(div) {
     const input = div.getElementsByClassName("element")[0];
-    if (!inputHasContent(input)) return;
+    if (!itemHasText(input)) return;
 
     const [spanMover, spanClose] = div.querySelectorAll(".ghost");
     if (!spanClose) return;
@@ -166,13 +165,13 @@ function onMouseLeaveItem(div) {
 }
 
 function onMouseEnterSpan(flag) {
-    isMouseOverCloseSpan = flag;
+    isHoveringCloseBtn = flag;
 }
 
 // ── Focus en inputs ─────────────────────────────────────────────
 
 function onFocusInInput(input) {
-    if (!inputHasContent(input)) return;
+    if (!itemHasText(input)) return;
 
     const [spanMover, spanClose] = input.parentNode.querySelectorAll(".ghost");
     if (!spanClose) return;
@@ -182,7 +181,7 @@ function onFocusInInput(input) {
 }
 
 function onFocusOutInput(input) {
-    if (isMouseOverCloseSpan) return;
+    if (isHoveringCloseBtn) return;
 
     const [spanMover, spanClose] = input.parentNode.querySelectorAll(".ghost");
     if (!spanClose) return;
@@ -194,8 +193,7 @@ function onFocusOutInput(input) {
 // ── Teclado ─────────────────────────────────────────────────────
 
 function onTitleKeyPress(event, squareId, elementId) {
-    const target = getListInput(squareId, elementId);
-    focusOnEnter(event, target);
+    focusOnEnter(event, getListInput(squareId, elementId));
 }
 
 function onItemKeyPress(event, squareId, elementId) {
@@ -239,19 +237,19 @@ function extractIndexFromId(element) {
     return +id.substring(id.lastIndexOf("-") + 1);
 }
 
-function inputHasContent(input) {
+function itemHasText(input) {
     return input.getAttribute("data-has-next-element") === "1";
 }
 
-function insertItemInOrder(divPending, itemToInsert) {
+function restoreItemToPending(divPending, itemToRestore) {
     const items = divPending.getElementsByClassName("item");
-    const targetId = extractIndexFromId(itemToInsert);
+    const targetId = extractIndexFromId(itemToRestore);
 
     for (let i = 0; i < items.length; i++) {
         if (extractIndexFromId(items[i]) > targetId) {
-            divPending.insertBefore(itemToInsert, items[i]);
+            divPending.insertBefore(itemToRestore, items[i]);
             return;
         }
     }
-    divPending.insertBefore(itemToInsert, null);
+    divPending.insertBefore(itemToRestore, null);
 }

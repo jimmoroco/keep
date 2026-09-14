@@ -21,7 +21,7 @@ function getSquareData(index) {
     }
 
     // Migración del formato legacy al vuelo
-    return parseLegacySquare(raw);
+    return migrateLegacyFormat(raw);
 }
 
 function saveSquareData(index, data) {
@@ -38,7 +38,7 @@ function deleteSquareData(index) {
 }
 
 // Migración del formato viejo: "título¬true¬texto¬false¬texto2"
-function parseLegacySquare(raw) {
+function migrateLegacyFormat(raw) {
     const parts = raw.split("¬");
     const items = [];
     for (let i = 1; i < parts.length; i += 2) {
