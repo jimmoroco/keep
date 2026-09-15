@@ -1,4 +1,8 @@
-// events.js — handlers de eventos
+// events.js — captura de eventos del usuario
+//
+// Solo llama dispatch(). No toca localStorage ni el DOM directamente.
+// Excepción válida: el panel de edición es UI temporal que no forma
+// parte del estado persistido hasta que el usuario confirma.
 
 let editContainer;
 let editingSquareId;
@@ -19,27 +23,25 @@ function initEvents() {
 // ── Clicks globales ─────────────────────────────────────────────
 
 function onDocumentClick(e) {
-    const elementClicked = e.target;
+    const clicked = e.target;
 
-    // Click en una tarjeta en modo lectura: abrir editor
-    if (elementClicked.classList.contains("no-edit")) {
-        if (elementClicked.hasAttribute("data-id")) {
-            const itemId = elementClicked.getAttribute("data-id");
-            const divContainer = document.getElementById("div-container");
-            renderSquareCard(divContainer, itemId);
+    if (clicked.classList.contains("no-edit")) {
+        if (clicked.hasAttribute("data-id")) {
+            const squareId = +clicked.getAttribute("data-id");
+            openEditPanel(squareId);
         }
         return;
     }
 
     if (editContainer.classList.contains("hidden")) return;
-    if (elementClicked.classList.contains("edit")) return;
+    if (clicked.classList.contains("edit")) return;
 
-    // Click fuera del panel de edición: guardar si hay contenido
+    // Click fuera del panel: confirmar si hay contenido
     const inputElements = editContainer.getElementsByClassName("element");
     for (let i = 0; i < inputElements.length; i++) {
         if (inputElements[i].innerText.trim() !== "") {
-            saveSquare();
-            document.getElementById("div-square-edit").style.display = "none";
+            confirmSquare();
+            closeEditPanel();
             return;
         }
     }
@@ -51,14 +53,19 @@ function openEditPanel(squareId) {
     editingSquareId = squareId;
     editContainer.innerHTML = renderEditPanel(squareId);
     editContainer.classList.remove("hidden");
-
     document.getElementById(`input-title-${squareId}`).focus();
 }
 
-function saveSquare() {
-    const titleEl = document.getElementById(`input-title-${editingSquareId}`);
+function closeEditPanel() {
+    editContainer.classList.add("hidden");
+    editContainer.innerHTML = "";
+}
+
+// Lee el formulario de edición y dispara ADD_SQUARE
+function confirmSquare() {
+    const titleEl  = document.getElementById(`input-title-${editingSquareId}`);
     const checkBoxes = Array.from(editContainer.getElementsByClassName("checkbox-item"));
-    const itemEls = Array.from(editContainer.getElementsByClassName("element done"));
+    const itemEls    = Array.from(editContainer.getElementsByClassName("element done"));
 
     const items = itemEls
         .filter(el => el.getAttribute("data-has-next-element") === "1")
@@ -67,27 +74,21 @@ function saveSquare() {
             text: el.innerText.trim()
         }));
 
-    const data = {
-        title: titleEl.innerText.trim(),
-        items
-    };
-
-    const squareCount = getSquareCount();
-    const newIndex = squareCount + 1;
-    saveSquareData(newIndex, data);
-    setSquareCount(newIndex);
-
-    const divContainer = document.getElementById("div-container");
-    renderSquareCard(divContainer, newIndex);
+    dispatch({
+        type: Actions.ADD_SQUARE,
+        data: {
+            title: titleEl.innerText.trim(),
+            items
+        }
+    });
 }
 
 // ── Tarjetas ────────────────────────────────────────────────────
 
-function deleteSquare(span) {
+function onDeleteSquareClick(span) {
     const divSquare = span.parentNode.parentNode;
-    const index = divSquare.id.replace("square-", "");
-    deleteSquareData(index);
-    divSquare.remove();
+    const id = +divSquare.id.replace("square-", "");
+    dispatch({ type: Actions.DELETE_SQUARE, id });
 }
 
 function enterTrash(div) {
@@ -98,17 +99,20 @@ function leaveTrash(div) {
     div.firstElementChild.style.visibility = "hidden";
 }
 
-// ── Items de lista ──────────────────────────────────────────────
+// ── Items de lista (panel de edición) ───────────────────────────
+//
+// checkedItem y deleteItem operan sobre el DOM del panel de edición,
+// que es UI temporal. El estado real se persiste solo al confirmar.
 
 function checkedItem(checkBox) {
-    const divItem = checkBox.parentNode.parentNode;
+    const divItem    = checkBox.parentNode.parentNode;
     const inputTarget = checkBox.parentNode.nextElementSibling;
 
     checkBox.classList.toggle("appearance");
     inputTarget.classList.toggle("line-through");
     inputTarget.readOnly = checkBox.checked;
 
-    const divDone = document.getElementById("div-done");
+    const divDone    = document.getElementById("div-done");
     const divPending = document.getElementById("div-pending");
 
     if (checkBox.checked) {
@@ -120,8 +124,7 @@ function checkedItem(checkBox) {
     } else {
         restoreItemToPending(divPending, divItem);
         if (divDone.innerHTML.trim() === "") {
-            const hr = document.getElementById("hr-n");
-            if (hr) hr.remove();
+            document.getElementById("hr-n")?.remove();
         }
     }
 }
@@ -130,14 +133,13 @@ function deleteItem(span) {
     span.parentNode.remove();
     isHoveringCloseBtn = false;
     const divDone = document.getElementById("div-done");
-    if (divDone && divDone.innerHTML.trim() === "") {
-        const hr = document.getElementById("hr-n");
-        if (hr) hr.remove();
+    if (divDone?.innerHTML.trim() === "") {
+        document.getElementById("hr-n")?.remove();
     }
 }
 
 function moveItem(spanMover) {
-    spanMover.parentNode.setAttribute("style", "transform:scale(1.09)");
+    spanMover.parentNode.style.transform = "scale(1.09)";
 }
 
 // ── Hover en items ──────────────────────────────────────────────
@@ -197,9 +199,9 @@ function onTitleKeyPress(event, squareId, elementId) {
 }
 
 function onItemKeyPress(event, squareId, elementId) {
-    const actualElement = event.target;
+    const actualElement  = event.target;
     const hasNextElement = actualElement.getAttribute("data-has-next-element");
-    const nextInput = getListInput(squareId, elementId);
+    const nextInput      = getListInput(squareId, elementId);
 
     if (hasNextElement === "0") {
         const parentDiv = actualElement.parentNode.parentNode;
@@ -222,7 +224,7 @@ function onItemKeyPress(event, squareId, elementId) {
 function focusOnEnter(event, element) {
     if (event.keyCode === 13 || event.which === 13) {
         event.preventDefault();
-        element.focus();
+        if (element) element.focus();
     }
 }
 
@@ -242,7 +244,7 @@ function itemHasText(input) {
 }
 
 function restoreItemToPending(divPending, itemToRestore) {
-    const items = divPending.getElementsByClassName("item");
+    const items    = divPending.getElementsByClassName("item");
     const targetId = extractIndexFromId(itemToRestore);
 
     for (let i = 0; i < items.length; i++) {
