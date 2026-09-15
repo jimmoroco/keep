@@ -45,8 +45,9 @@ function renderSquareCard(divContainer, square) {
 
     const title        = square.title || "Sin título";
     const pinnedClass  = square.pinned ? "pinned" : "";
-    const pinLabel    = square.pinned ? "Desfijar nota" : "Fijar nota";
-    const pinIcon     = square.pinned ? "📌" : "📍";
+    const pinLabel     = square.pinned ? "Desfijar nota" : "Fijar nota";
+    const pinIcon      = square.pinned ? "📌" : "📍";
+    const colorStyle   = square.color ? `style="background-color:${square.color}"` : "";
 
     const html = `
         <article class="square cursor-hand no-edit ${pinnedClass}"
@@ -55,6 +56,7 @@ function renderSquareCard(divContainer, square) {
                  draggable="true"
                  role="button"
                  tabindex="0"
+                 ${colorStyle}
                  aria-label="Nota: ${escapeAttr(title)}. Clic para editar.">
             <div class="card-actions no-edit" data-id="${square.id}">
                 <button class="pin-btn no-edit"
@@ -118,11 +120,13 @@ function renderEditPanel(squareId, square = null) {
         ? square.items.map((item, i) => renderEditListItem(squareId, i, item)).join("")
         : "";
     const firstEmptyIndex = square ? square.items.length : 0;
+    const currentColor    = square ? (square.color || null) : null;
 
     return `
         <div id="div-square-edit"
              class="square-edit edit"
              role="dialog"
+             style="${currentColor ? `background-color:${currentColor}` : ""}"
              aria-label="${square ? "Editar nota" : "Nueva nota"}">
             <div id="div-pending" class="square-pending edit">
                 <div id="input-title-${squareId}"
@@ -136,6 +140,9 @@ function renderEditPanel(squareId, square = null) {
                 ${renderNewListItem(squareId, firstEmptyIndex)}
             </div>
             <div id="div-done" class="square-done edit" role="list" aria-label="Completados"></div>
+            <div class="color-toolbar edit" role="toolbar" aria-label="Color de la nota">
+                ${renderColorPicker(squareId, currentColor)}
+            </div>
         </div>`;
 }
 
@@ -197,8 +204,30 @@ function renderCheckbox() {
                    aria-label="Marcar como completado"/>`;
 }
 
-// ── Utilidad ────────────────────────────────────────────────────
+// ── Paleta de colores ───────────────────────────────────────────
 
+function renderColorPicker(squareId, currentColor) {
+    const swatches = Config.CARD_COLORS.map(c => {
+        const isSelected = c.value === currentColor;
+        const bg         = c.value || "transparent";
+        const border     = c.value ? c.value : "rgba(255,255,255,0.35)";
+        return `
+            <button class="color-swatch edit ${isSelected ? "color-swatch--active" : ""}"
+                    style="background-color:${bg}; border-color:${border};"
+                    aria-label="${c.label}"
+                    aria-pressed="${isSelected}"
+                    data-color="${c.value || ""}"
+                    data-square-id="${squareId}"
+                    onclick="onColorSwatchClick(event, this)"
+                    title="${c.label}">
+                ${isSelected ? "✓" : ""}
+            </button>`;
+    }).join("");
+
+    return `<div class="color-swatches edit">${swatches}</div>`;
+}
+
+// ── Utilidad ────────────────────────────────────────────────────
 // Escapa comillas para uso seguro dentro de atributos HTML
 function escapeAttr(str) {
     return str.replace(/"/g, "&quot;").replace(/'/g, "&#39;");

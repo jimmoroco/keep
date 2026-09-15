@@ -8,6 +8,7 @@ let editContainer;
 let editingSquareId;
 let isEditingExisting = false;
 let isHoveringCloseBtn = false;
+let editingColor = null;    // color seleccionado en el panel antes de confirmar
 
 // ── Inicialización ──────────────────────────────────────────────
 
@@ -61,9 +62,11 @@ function openEditPanel(square) {
     if (square) {
         editingSquareId   = square.id;
         isEditingExisting = true;
+        editingColor      = square.color || null;
     } else {
         editingSquareId   = 0;
         isEditingExisting = false;
+        editingColor      = null;
     }
 
     editContainer.innerHTML = renderEditPanel(editingSquareId, square);
@@ -75,6 +78,7 @@ function closeEditPanel() {
     editContainer.classList.add("hidden");
     editContainer.innerHTML = "";
     isEditingExisting = false;
+    editingColor      = null;
 }
 
 function hasPanelContent() {
@@ -94,7 +98,7 @@ function confirmSquare() {
         text:    el.innerText.trim()
     })).filter(item => item.text !== "");
 
-    const data = { title: titleEl.innerText.trim(), items };
+    const data = { title: titleEl.innerText.trim(), items, color: editingColor };
 
     if (isEditingExisting) {
         dispatch({ type: Actions.EDIT_SQUARE, id: editingSquareId, data });
@@ -199,6 +203,32 @@ function onPinSquareClick(e, btn) {
     const square = getSquareById(id);
     dispatch({ type: Actions.TOGGLE_PIN, id });
     showToast(square?.pinned ? "Nota desfijada" : "Nota fijada", "info");
+}
+
+function onColorSwatchClick(e, btn) {
+    e.stopPropagation();
+    const squareId = +btn.getAttribute("data-square-id");
+    const color    = btn.getAttribute("data-color") || null;
+
+    // Guardar en estado (con o sin nota existente)
+    editingColor = color;
+
+    if (isEditingExisting) {
+        // Persistir sin re-renderizar para no destruir el panel abierto
+        dispatch({ type: Actions.SET_COLOR, id: squareId, color, skipRender: true });
+    }
+
+    // Actualizar el fondo del panel en tiempo real
+    const panel = document.getElementById("div-square-edit");
+    if (panel) panel.style.backgroundColor = color || "";
+
+    // Actualizar estado visual de los swatches
+    document.querySelectorAll(".color-swatch").forEach(s => {
+        const active = s.getAttribute("data-color") === (color || "");
+        s.classList.toggle("color-swatch--active", active);
+        s.setAttribute("aria-pressed", String(active));
+        s.textContent = active ? "✓" : "";
+    });
 }
 
 function onDeleteSquareClick(e, span) {    e.stopPropagation();

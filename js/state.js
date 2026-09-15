@@ -26,6 +26,7 @@ const Actions = Object.freeze({
     DELETE_ITEM:     "DELETE_ITEM",
     SET_SEARCH:      "SET_SEARCH",
     TOGGLE_PIN:      "TOGGLE_PIN",
+    SET_COLOR:       "SET_COLOR",
 });
 
 // ── Reducer — función pura, sin efectos secundarios ─────────────
@@ -120,21 +121,32 @@ function reducer(currentState, action) {
             return { ...currentState, squares };
         }
 
+        case Actions.SET_COLOR: {
+            const squares = currentState.squares.map(square =>
+                square.id === action.id
+                    ? { ...square, color: action.color }
+                    : square
+            );
+            return { ...currentState, squares };
+        }
+
         default:
             return currentState;
     }
 }
 
-// ── Dispatch ────────────────────────────────────────────────────
-//
-// SET_SEARCH y UNDO_DELETE (fuera de ventana) no persisten: son UI efímera.
-
+// SET_SEARCH no persiste ni re-renderiza: es filtro de UI efímero.
+// SET_COLOR en edición activa: persiste pero no re-renderiza (el panel se
+// actualiza directamente en events.js para no destruir el formulario abierto).
 function dispatch(action) {
     state = reducer(state, action);
-    render(state);
-    if (action.type !== Actions.SET_SEARCH) {
+    if (action.type === Actions.SET_SEARCH) return;
+    if (action.type === Actions.SET_COLOR && action.skipRender) {
         persist(state);
+        return;
     }
+    render(state);
+    persist(state);
 }
 
 // ── Validación y sanitización ───────────────────────────────────
@@ -146,6 +158,7 @@ function isValidSquare(data) {
 function sanitizeSquareData(data) {
     return {
         title: data.title.slice(0, Config.MAX_TITLE_LENGTH).trim(),
+        color: data.color || null,
         items: data.items
             .slice(0, Config.MAX_ITEMS_PER_NOTE)
             .map(item => ({
