@@ -181,6 +181,60 @@ body {
     margin-top: 6px;
 }
 
+/* ── Sección separadora (Fijadas / Otras notas) ────────────────── */
+
+.section-label {
+    width: 100%;
+    padding: 8px 12px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+    user-select: none;
+}
+
+/* ── Acciones de tarjeta (pin) ─────────────────────────────────── */
+
+.card-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 2px;
+    min-height: 22px;
+}
+
+.pin-btn {
+    border: none;
+    background: none;
+    padding: 0 2px;
+    font-size: 14px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity var(--transition), transform var(--transition);
+    line-height: 1;
+}
+
+/* Mostrar pin al hacer hover sobre la tarjeta */
+.square:hover .pin-btn,
+.square:focus-within .pin-btn {
+    opacity: 0.55;
+}
+
+.square:hover .pin-btn:hover {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+/* Si está fijada, el pin siempre es visible */
+.square.pinned .pin-btn {
+    opacity: 1;
+}
+
+/* Tarjeta fijada con borde sutil diferenciado */
+.square.pinned {
+    border-color: rgba(255, 255, 255, 0.55);
+}
+
 /* ── Grid de tarjetas ──────────────────────────────────────────── */
 
 .container {

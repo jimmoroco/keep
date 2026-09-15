@@ -193,8 +193,15 @@ function initEditPanelDelegation() {
 
 // ── Tarjetas ────────────────────────────────────────────────────
 
-function onDeleteSquareClick(e, span) {
+function onPinSquareClick(e, btn) {
     e.stopPropagation();
+    const id = +btn.getAttribute("data-id");
+    const square = getSquareById(id);
+    dispatch({ type: Actions.TOGGLE_PIN, id });
+    showToast(square?.pinned ? "Nota desfijada" : "Nota fijada", "info");
+}
+
+function onDeleteSquareClick(e, span) {    e.stopPropagation();
     const divSquare = span.parentNode.parentNode;
     const id        = +divSquare.id.replace("square-", "");
 

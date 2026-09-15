@@ -8,7 +8,27 @@
 function render(state) {
     const divContainer = document.getElementById("div-container");
     divContainer.innerHTML = "";
-    getVisibleSquares(state).forEach(square => renderSquareCard(divContainer, square));
+
+    const visible  = getVisibleSquares(state);
+    const pinned   = visible.filter(s => s.pinned);
+    const unpinned = visible.filter(s => !s.pinned);
+
+    if (pinned.length > 0) {
+        divContainer.insertAdjacentHTML("beforeend", renderSectionLabel("Fijadas"));
+        pinned.forEach(square => renderSquareCard(divContainer, square));
+    }
+
+    if (unpinned.length > 0) {
+        // Solo mostrar la etiqueta "Otras notas" si también hay fijadas
+        if (pinned.length > 0) {
+            divContainer.insertAdjacentHTML("beforeend", renderSectionLabel("Otras notas"));
+        }
+        unpinned.forEach(square => renderSquareCard(divContainer, square));
+    }
+}
+
+function renderSectionLabel(text) {
+    return `<div class="section-label" role="heading" aria-level="2">${text}</div>`;
 }
 
 // ── Tarjeta de nota (modo lectura) ──────────────────────────────
@@ -23,16 +43,26 @@ function renderSquareCard(divContainer, square) {
             ${doneItems.map(item => renderCardItem(square.id, item.text, true)).join("")}
         </div>` : "";
 
-    const title = square.title || "Sin título";
+    const title        = square.title || "Sin título";
+    const pinnedClass  = square.pinned ? "pinned" : "";
+    const pinLabel    = square.pinned ? "Desfijar nota" : "Fijar nota";
+    const pinIcon     = square.pinned ? "📌" : "📍";
 
     const html = `
-        <article class="square cursor-hand no-edit"
+        <article class="square cursor-hand no-edit ${pinnedClass}"
                  id="square-${square.id}"
                  data-id="${square.id}"
                  draggable="true"
                  role="button"
                  tabindex="0"
                  aria-label="Nota: ${escapeAttr(title)}. Clic para editar.">
+            <div class="card-actions no-edit" data-id="${square.id}">
+                <button class="pin-btn no-edit"
+                        aria-label="${pinLabel}"
+                        aria-pressed="${square.pinned}"
+                        onclick="onPinSquareClick(event, this)"
+                        data-id="${square.id}">${pinIcon}</button>
+            </div>
             <div class="square-pending no-edit" data-id="${square.id}">
                 <div class="no-edit title cursor-hand"
                      data-id="${square.id}"

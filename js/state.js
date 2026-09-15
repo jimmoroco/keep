@@ -25,6 +25,7 @@ const Actions = Object.freeze({
     TOGGLE_ITEM:     "TOGGLE_ITEM",
     DELETE_ITEM:     "DELETE_ITEM",
     SET_SEARCH:      "SET_SEARCH",
+    TOGGLE_PIN:      "TOGGLE_PIN",
 });
 
 // ── Reducer — función pura, sin efectos secundarios ─────────────
@@ -44,7 +45,7 @@ function reducer(currentState, action) {
                 : 1;
             return {
                 ...currentState,
-                squares: [{ id: newId, ...data }, ...currentState.squares]
+                squares: [{ id: newId, pinned: false, ...data }, ...currentState.squares]
             };
         }
 
@@ -110,6 +111,15 @@ function reducer(currentState, action) {
         case Actions.SET_SEARCH:
             return { ...currentState, searchQuery: action.query };
 
+        case Actions.TOGGLE_PIN: {
+            const squares = currentState.squares.map(square =>
+                square.id === action.id
+                    ? { ...square, pinned: !square.pinned }
+                    : square
+            );
+            return { ...currentState, squares };
+        }
+
         default:
             return currentState;
     }
@@ -154,9 +164,16 @@ function getSquareById(id) {
 
 function getVisibleSquares(currentState) {
     const query = currentState.searchQuery.trim().toLowerCase();
-    if (!query) return currentState.squares;
-    return currentState.squares.filter(square =>
-        square.title.toLowerCase().includes(query) ||
-        square.items.some(item => item.text.toLowerCase().includes(query))
-    );
+    const squares = query
+        ? currentState.squares.filter(square =>
+            square.title.toLowerCase().includes(query) ||
+            square.items.some(item => item.text.toLowerCase().includes(query))
+          )
+        : currentState.squares;
+
+    // Fijadas primero, luego el resto, conservando orden relativo en cada grupo
+    return [
+        ...squares.filter(s => s.pinned),
+        ...squares.filter(s => !s.pinned),
+    ];
 }
