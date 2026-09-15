@@ -6,6 +6,7 @@
 
 let editContainer;
 let editingSquareId;
+let isEditingExisting = false;
 let isHoveringCloseBtn = false;
 
 // ── Inicialización ──────────────────────────────────────────────
@@ -14,10 +15,12 @@ function initEvents() {
     editContainer = document.getElementById("div-container-edit");
 
     document.getElementById("icon-plus").addEventListener("click", function () {
-        openEditPanel(0);
+        openEditPanel(null);
     });
 
     document.body.addEventListener("click", onDocumentClick);
+    initSearch();
+    initDragAndDrop();
 }
 
 // ── Clicks globales ─────────────────────────────────────────────
@@ -25,67 +28,90 @@ function initEvents() {
 function onDocumentClick(e) {
     const clicked = e.target;
 
-    if (clicked.classList.contains("no-edit")) {
-        if (clicked.hasAttribute("data-id")) {
-            const squareId = +clicked.getAttribute("data-id");
-            openEditPanel(squareId);
-        }
+    // El botón + tiene su propio listener, no lo interceptamos acá
+    if (clicked.id === "icon-plus") return;
+
+    // Click en una tarjeta en modo lectura: abrir en edición
+    if (clicked.classList.contains("no-edit") && clicked.hasAttribute("data-id")) {
+        const squareId = +clicked.getAttribute("data-id");
+        const square   = getSquareById(squareId);
+        if (square) openEditPanel(square);
         return;
     }
 
     if (editContainer.classList.contains("hidden")) return;
     if (clicked.classList.contains("edit")) return;
 
-    // Click fuera del panel: confirmar si hay contenido
-    const inputElements = editContainer.getElementsByClassName("element");
-    for (let i = 0; i < inputElements.length; i++) {
-        if (inputElements[i].innerText.trim() !== "") {
-            confirmSquare();
-            closeEditPanel();
-            return;
-        }
+    // Click fuera del panel: guardar si hay contenido, luego cerrar
+    if (hasPanelContent()) {
+        confirmSquare();
     }
+    closeEditPanel();
 }
 
 // ── Panel de edición ────────────────────────────────────────────
 
-function openEditPanel(squareId) {
-    editingSquareId = squareId;
-    editContainer.innerHTML = renderEditPanel(squareId);
+// square = null → nota nueva | square = objeto → edición existente
+function openEditPanel(square) {
+    if (square) {
+        editingSquareId   = square.id;
+        isEditingExisting = true;
+    } else {
+        // ID temporal para los IDs del DOM del formulario
+        editingSquareId   = 0;
+        isEditingExisting = false;
+    }
+
+    editContainer.innerHTML = renderEditPanel(editingSquareId, square);
     editContainer.classList.remove("hidden");
-    document.getElementById(`input-title-${squareId}`).focus();
+    document.getElementById(`input-title-${editingSquareId}`).focus();
 }
 
 function closeEditPanel() {
     editContainer.classList.add("hidden");
     editContainer.innerHTML = "";
+    isEditingExisting = false;
 }
 
-// Lee el formulario de edición y dispara ADD_SQUARE
+function hasPanelContent() {
+    const elements = editContainer.getElementsByClassName("element");
+    for (let i = 0; i < elements.length; i++) {
+        if (elements[i].innerText.trim() !== "") return true;
+    }
+    const title = editContainer.querySelector(".title");
+    return title && title.innerText.trim() !== "";
+}
+
+// Lee el formulario y dispara ADD_SQUARE o EDIT_SQUARE
 function confirmSquare() {
-    const titleEl  = document.getElementById(`input-title-${editingSquareId}`);
+    const titleEl    = document.getElementById(`input-title-${editingSquareId}`);
     const checkBoxes = Array.from(editContainer.getElementsByClassName("checkbox-item"));
-    const itemEls    = Array.from(editContainer.getElementsByClassName("element done"));
 
-    const items = itemEls
-        .filter(el => el.getAttribute("data-has-next-element") === "1")
-        .map((el, i) => ({
-            checked: checkBoxes[i] ? checkBoxes[i].checked : false,
-            text: el.innerText.trim()
-        }));
+    // Capturamos todos los elementos de lista que tengan texto confirmado
+    // (data-has-next-element="1" significa que el usuario presionó Enter en ese item)
+    const itemEls = Array.from(editContainer.querySelectorAll(".element[data-has-next-element='1']"));
 
-    dispatch({
-        type: Actions.ADD_SQUARE,
-        data: {
-            title: titleEl.innerText.trim(),
-            items
-        }
-    });
+    const items = itemEls.map((el, i) => ({
+        checked: checkBoxes[i] ? checkBoxes[i].checked : false,
+        text:    el.innerText.trim()
+    })).filter(item => item.text !== "");
+
+    const data = {
+        title: titleEl.innerText.trim(),
+        items
+    };
+
+    if (isEditingExisting) {
+        dispatch({ type: Actions.EDIT_SQUARE, id: editingSquareId, data });
+    } else {
+        dispatch({ type: Actions.ADD_SQUARE, data });
+    }
 }
 
 // ── Tarjetas ────────────────────────────────────────────────────
 
-function onDeleteSquareClick(span) {
+function onDeleteSquareClick(e, span) {
+    e.stopPropagation();
     const divSquare = span.parentNode.parentNode;
     const id = +divSquare.id.replace("square-", "");
     dispatch({ type: Actions.DELETE_SQUARE, id });
@@ -99,13 +125,137 @@ function leaveTrash(div) {
     div.firstElementChild.style.visibility = "hidden";
 }
 
+// ── Búsqueda en tiempo real ─────────────────────────────────────
+
+function initSearch() {
+    const input = document.getElementById("txtSearch");
+
+    input.addEventListener("input", function () {
+        dispatch({ type: Actions.SET_SEARCH, query: this.value });
+        highlightSearchMatches(this.value.trim().toLowerCase());
+    });
+
+    // Escape limpia la búsqueda
+    input.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+            this.value = "";
+            dispatch({ type: Actions.SET_SEARCH, query: "" });
+            highlightSearchMatches("");
+        }
+    });
+}
+
+function highlightSearchMatches(query) {
+    const squares = document.querySelectorAll(".square");
+    squares.forEach(sq => {
+        if (!query) {
+            sq.classList.remove("search-match");
+            return;
+        }
+        const squareId = +sq.getAttribute("data-id");
+        const square   = getSquareById(squareId);
+        if (!square) return;
+
+        const matches =
+            square.title.toLowerCase().includes(query) ||
+            square.items.some(item => item.text.toLowerCase().includes(query));
+
+        sq.classList.toggle("search-match", matches);
+    });
+}
+
+// ── Drag & drop de tarjetas ─────────────────────────────────────
+
+let dragSourceId = null;
+
+function initDragAndDrop() {
+    const container = document.getElementById("div-container");
+
+    // Delegamos en el container para cubrir tarjetas renderizadas dinámicamente
+    container.addEventListener("dragstart", onCardDragStart);
+    container.addEventListener("dragend",   onCardDragEnd);
+    container.addEventListener("dragover",  onCardDragOver);
+    container.addEventListener("dragleave", onCardDragLeave);
+    container.addEventListener("drop",      onCardDrop);
+}
+
+function getCardFromTarget(target) {
+    return target.closest(".square");
+}
+
+function onCardDragStart(e) {
+    const card = getCardFromTarget(e.target);
+    if (!card) return;
+
+    dragSourceId = +card.getAttribute("data-id");
+    card.classList.add("dragging");
+
+    // Necesario para que Firefox inicie el drag
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", dragSourceId);
+}
+
+function onCardDragEnd(e) {
+    const card = getCardFromTarget(e.target);
+    if (card) card.classList.remove("dragging");
+
+    // Limpiar cualquier drag-over que haya quedado
+    document.querySelectorAll(".square.drag-over")
+        .forEach(el => el.classList.remove("drag-over"));
+
+    dragSourceId = null;
+}
+
+function onCardDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+
+    const card = getCardFromTarget(e.target);
+    if (!card || +card.getAttribute("data-id") === dragSourceId) return;
+
+    // Resaltar solo la tarjeta sobre la que estamos
+    document.querySelectorAll(".square.drag-over")
+        .forEach(el => el.classList.remove("drag-over"));
+    card.classList.add("drag-over");
+}
+
+function onCardDragLeave(e) {
+    const card = getCardFromTarget(e.target);
+    // relatedTarget evita flickering al moverse entre hijos
+    if (card && !card.contains(e.relatedTarget)) {
+        card.classList.remove("drag-over");
+    }
+}
+
+function onCardDrop(e) {
+    e.preventDefault();
+    const card = getCardFromTarget(e.target);
+    if (!card) return;
+
+    card.classList.remove("drag-over");
+
+    const targetId = +card.getAttribute("data-id");
+    if (targetId === dragSourceId || dragSourceId === null) return;
+
+    // Reordenar el array de squares moviendo el source antes del target
+    const squares     = [...state.squares];
+    const sourceIndex = squares.findIndex(s => s.id === dragSourceId);
+    const targetIndex = squares.findIndex(s => s.id === targetId);
+    if (sourceIndex === -1 || targetIndex === -1) return;
+
+    const [moved] = squares.splice(sourceIndex, 1);
+    squares.splice(targetIndex, 0, moved);
+
+    dispatch({ type: Actions.REORDER_SQUARES, squares });
+}
+
 // ── Items de lista (panel de edición) ───────────────────────────
 //
 // checkedItem y deleteItem operan sobre el DOM del panel de edición,
 // que es UI temporal. El estado real se persiste solo al confirmar.
 
 function checkedItem(checkBox) {
-    const divItem    = checkBox.parentNode.parentNode;
+    const divItem     = checkBox.parentNode.parentNode;
     const inputTarget = checkBox.parentNode.nextElementSibling;
 
     checkBox.classList.toggle("appearance");

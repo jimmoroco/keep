@@ -8,11 +8,12 @@
     --color-dark: #191919;
     --color-light: #ffffff;
     --color-page: #FFDD00;
+    --color-drag-over: rgba(255, 255, 255, 0.15);
 }
 
 body {
     background: var(--color-dark);
-    height: 99vh;
+    min-height: 100vh;
 }
 
 [contentEditable=true]:empty:before {
@@ -20,12 +21,41 @@ body {
     opacity: 0.6;
 }
 
+/* ── Búsqueda ──────────────────────────────────────────────────── */
+
 .search {
     display: flex;
     justify-content: center;
-    margin: 15px;
-    width: 100%;
+    padding: 15px 15px 0;
 }
+
+#txtSearch {
+    width: 40%;
+    height: 45px;
+    border-radius: 10px;
+    border: none;
+    padding: 0 16px;
+    font-size: 15px;
+    background-color: rgba(255, 255, 255, .15);
+    color: var(--color-light);
+    transition: background-color 0.2s ease;
+    outline: none;
+}
+
+#txtSearch::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+#txtSearch:focus {
+    background-color: rgba(255, 255, 255, .9);
+    color: var(--color-dark);
+}
+
+#txtSearch:focus::placeholder {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+/* ── Visibilidad ───────────────────────────────────────────────── */
 
 .hidden {
     display: none;
@@ -35,16 +65,7 @@ body {
     display: block;
 }
 
-#txtSearch {
-    width: 40%;
-    height: 45px;
-    border-radius: 10px;
-    background-color: rgba(255, 255, 255, .6)
-}
-
-#txtSearch:focus {
-    background-color: white
-}
+/* ── Título de nota ────────────────────────────────────────────── */
 
 .title {
     font-size: 16px;
@@ -53,7 +74,6 @@ body {
     margin-bottom: 10px;
     margin-left: 11px;
     border-width: 0px;
-    color: white;
     background-color: var(--color-dark);
 }
 
@@ -62,6 +82,8 @@ body {
     background-color: var(--color-dark);
     outline: 0;
 }
+
+/* ── Items de lista ────────────────────────────────────────────── */
 
 .plus {
     color: white;
@@ -91,7 +113,6 @@ body {
     font-size: 14px;
     align-items: center;
     display: flex;
-    padding-left: 12px;
     border-color: var(--color-dark);
     border-width: 0px;
     color: white;
@@ -125,11 +146,14 @@ body {
     border-width: 0.100rem;
     border-style: solid;
     border-color: white;
+    flex-shrink: 0;
 }
 
 .checkbox-item:checked {
     background-color: var(--color-dark);
 }
+
+/* ── Panel de edición ──────────────────────────────────────────── */
 
 .edit-area {
     display: flex;
@@ -140,14 +164,9 @@ body {
 
 .square-edit {
     margin: 20px;
-    padding-top: 20px;
-    padding-bottom: 20px;
-    padding-right: 20px;
-    padding-left: 18px;
+    padding: 20px 20px 20px 18px;
     width: 500px;
     background-color: var(--color-dark);
-    border-color: white;
-    /* border-style: dotted; */
     border-radius: 10px;
     box-shadow: 0px 1px 10px rgba(0, 0, 0, 0.9);
 }
@@ -160,40 +179,58 @@ body {
     margin-top: 6px;
 }
 
+/* ── Grid de tarjetas ──────────────────────────────────────────── */
+
 .container {
     display: flex;
     align-items: flex-start;
     flex-wrap: wrap;
     justify-content: center;
+    padding: 10px;
 }
 
 .square {
     flex: none;
     width: 250px;
-    /* height: 450px; */
     margin: 6px;
     padding: 6px;
     border-width: 1px;
     border-style: solid;
     border-color: white;
     border-radius: 10px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
+
+/* Tarjeta siendo arrastrada */
+.square.dragging {
+    opacity: 0.4;
+    transform: scale(1.03);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+}
+
+/* Tarjeta que recibe el drop */
+.square.drag-over {
+    background-color: var(--color-drag-over);
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Tarjeta con coincidencia de búsqueda */
+.square.search-match {
+    border-color: var(--color-page);
+    box-shadow: 0 0 8px rgba(255, 221, 0, 0.4);
+}
+
+/* ── Mover item ────────────────────────────────────────────────── */
 
 .mover {
     padding-top: 1px;
     color: white;
     font-size: 15px;
-    margin-top: 1px;
-    margin-bottom: 2px;
-    margin-left: 0px;
-    margin-right: 4px;
+    margin: 1px 4px 2px 0;
     cursor: move;
 }
 
-#txtTitle {
-    border: none;
-    background: var(--color-dark);
-}
+/* ── Botón + flotante ──────────────────────────────────────────── */
 
 .icon-plus {
     display: flex;
@@ -202,34 +239,42 @@ body {
     position: fixed;
     width: 55px;
     height: 55px;
-    line-height: 15px;
     bottom: 20px;
     right: 20px;
     color: green;
-    border-radius: 50px;
-    text-align: center;
+    border-radius: 50%;
     font-size: 50px;
     box-shadow: 0px 1px 10px rgba(0, 0, 0, 0.9);
     z-index: 100;
     background-color: var(--color-dark);
     font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+}
+
+.icon-plus:hover {
+    transform: scale(1.1);
 }
 
 .cursor-hand {
     cursor: pointer;
 }
 
+/* ── Papelera ──────────────────────────────────────────────────── */
+
 .trash {
     text-align: right;
-    align-content: end;
     color: white;
+    margin-top: 4px;
 }
+
+/* ── Footer ────────────────────────────────────────────────────── */
 
 .footer-version {
     position: fixed;
     bottom: 20px;
-    right: 50%;
-    color: white;
-    text-align: center;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255, 255, 255, 0.4);
     font-size: 12px;
 }
