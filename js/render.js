@@ -8,9 +8,7 @@
 function render(state) {
     const divContainer = document.getElementById("div-container");
     divContainer.innerHTML = "";
-
-    const visible = getVisibleSquares(state);
-    visible.forEach(square => renderSquareCard(divContainer, square));
+    getVisibleSquares(state).forEach(square => renderSquareCard(divContainer, square));
 }
 
 // ── Tarjeta de nota (modo lectura) ──────────────────────────────
@@ -20,30 +18,43 @@ function renderSquareCard(divContainer, square) {
     const doneItems    = square.items.filter(item => item.checked);
 
     const doneSection = doneItems.length > 0 ? `
-        <hr class="no-edit" data-id="${square.id}">
-        <div class="square-done no-edit" data-id="${square.id}">
+        <hr class="no-edit" data-id="${square.id}" aria-hidden="true">
+        <div class="square-done no-edit" data-id="${square.id}" role="list" aria-label="Completados">
             ${doneItems.map(item => renderCardItem(square.id, item.text, true)).join("")}
         </div>` : "";
 
+    const title = square.title || "Sin título";
+
     const html = `
-        <div class="square cursor-hand no-edit"
-             id="square-${square.id}"
-             data-id="${square.id}"
-             draggable="true">
+        <article class="square cursor-hand no-edit"
+                 id="square-${square.id}"
+                 data-id="${square.id}"
+                 draggable="true"
+                 role="button"
+                 tabindex="0"
+                 aria-label="Nota: ${escapeAttr(title)}. Clic para editar.">
             <div class="square-pending no-edit" data-id="${square.id}">
-                <div class="no-edit title cursor-hand" data-id="${square.id}">
-                    ${square.title}
+                <div class="no-edit title cursor-hand"
+                     data-id="${square.id}"
+                     aria-hidden="true">
+                    ${title}
                 </div>
-                ${pendingItems.map(item => renderCardItem(square.id, item.text, false)).join("")}
+                ${pendingItems.length > 0
+                    ? `<div role="list" aria-label="Pendientes" class="no-edit" data-id="${square.id}">
+                           ${pendingItems.map(item => renderCardItem(square.id, item.text, false)).join("")}
+                       </div>`
+                    : ""}
             </div>
             ${doneSection}
             <div class="trash no-edit"
                  onmouseenter="enterTrash(this)"
                  onmouseleave="leaveTrash(this)">
-                <span style="visibility:hidden"
-                      onclick="onDeleteSquareClick(event, this)">&#128465;</span>
+                <button class="trash-btn"
+                        style="visibility:hidden"
+                        aria-label="Eliminar nota"
+                        onclick="onDeleteSquareClick(event, this)">&#128465;</button>
             </div>
-        </div>`;
+        </article>`;
 
     divContainer.insertAdjacentHTML("beforeend", html);
 }
@@ -51,77 +62,79 @@ function renderSquareCard(divContainer, square) {
 function renderCardItem(squareId, text, checked) {
     const lineThrough  = checked ? "line-through" : "";
     const disabledAttr = checked ? "disabled checked" : "";
+    const ariaChecked  = checked ? "true" : "false";
     return `
-        <div class="item no-edit" data-id="${squareId}">
-            <span class="plus" data-id="${squareId}">
+        <div class="item no-edit" data-id="${squareId}" role="listitem">
+            <span class="plus" data-id="${squareId}" aria-hidden="true">
                 <input type="checkbox"
                        class="checkbox-item cursor-hand appearance"
                        data-id="${squareId}"
+                       aria-checked="${ariaChecked}"
                        ${disabledAttr}>
             </span>
-            <div class="no-edit element cursor-hand ${lineThrough}" data-id="${squareId}">
+            <div class="no-edit element cursor-hand ${lineThrough}"
+                 data-id="${squareId}"
+                 aria-label="${escapeAttr(text)}${checked ? " (completado)" : ""}">
                 ${text}
             </div>
         </div>`;
 }
 
 // ── Panel de edición (modo escritura) ───────────────────────────
-//
-// Si se pasa un objeto `square`, precarga los datos para edición.
-// Si no, renderiza un panel vacío para nota nueva.
 
 function renderEditPanel(squareId, square = null) {
-    const titleValue = square ? square.title : "";
-    const existingItems = square
+    const titleValue      = square ? square.title : "";
+    const existingItems   = square
         ? square.items.map((item, i) => renderEditListItem(squareId, i, item)).join("")
         : "";
     const firstEmptyIndex = square ? square.items.length : 0;
 
     return `
-        <div id="div-square-edit" class="square-edit edit">
+        <div id="div-square-edit"
+             class="square-edit edit"
+             role="dialog"
+             aria-label="${square ? "Editar nota" : "Nueva nota"}">
             <div id="div-pending" class="square-pending edit">
                 <div id="input-title-${squareId}"
                      class="title edit"
                      placeholder="Título"
                      contenteditable="true"
-                     onkeypress="onTitleKeyPress(event, ${squareId}, 0);">${titleValue}</div>
+                     role="textbox"
+                     aria-label="Título de la nota"
+                     aria-multiline="false">${titleValue}</div>
                 ${existingItems}
                 ${renderNewListItem(squareId, firstEmptyIndex)}
             </div>
-            <div id="div-done" class="square-done edit"></div>
+            <div id="div-done" class="square-done edit" role="list" aria-label="Completados"></div>
         </div>`;
 }
 
-// Item precargado al editar una nota existente
 function renderEditListItem(squareId, elementId, item) {
-    const checkedAttr  = item.checked ? "checked" : "";
+    const checkedAttr      = item.checked ? "checked" : "";
     const lineThroughClass = item.checked ? "line-through" : "";
     return `
         <div id="div-item-${squareId}-${elementId}"
              class="item edit"
-             onmouseenter="onMouseEnterItem(this)"
-             onmouseleave="onMouseLeaveItem(this)"
-             draggable="true">
-            <span class="ghost mover edit" style="visibility:hidden;"
-                  onclick="moveItem(this)">&#8801;</span>
-            <span class="plus edit">
+             draggable="true"
+             role="listitem">
+            <span class="ghost mover edit"
+                  style="visibility:hidden;"
+                  aria-hidden="true">&#8801;</span>
+            <span class="plus edit" aria-hidden="true">
                 <input type="checkbox"
                        class="checkbox-item cursor-hand appearance edit"
-                       onchange="checkedItem(this)"
+                       aria-label="Marcar como ${item.checked ? "pendiente" : "completado"}"
                        ${checkedAttr}/>
             </span>
             <div id="input-element-${squareId}-${elementId}"
                  class="element done edit ${lineThroughClass}"
                  contenteditable="true"
+                 role="textbox"
+                 aria-label="Elemento de lista"
                  placeholder="Elemento de lista"
-                 data-has-next-element="1"
-                 onkeypress="onItemKeyPress(event, ${squareId}, ${elementId + 1});"
-                 onfocusin="onFocusInInput(this)"
-                 onfocusout="onFocusOutInput(this)">${item.text}</div>
-            <span class="ghost close cursor-hand hidden edit"
-                  onclick="deleteItem(this)"
-                  onmouseenter="onMouseEnterSpan(true)"
-                  onmouseleave="onMouseEnterSpan(false)">x</span>
+                 data-has-next-element="1">${item.text}</div>
+            <button class="ghost close cursor-hand hidden edit"
+                    aria-label="Eliminar este elemento">x</button>
         </div>`;
 }
 
@@ -129,30 +142,34 @@ function renderNewListItem(squareId, elementId) {
     return `
         <div id="div-item-${squareId}-${elementId}"
              class="item edit"
-             onmouseenter="onMouseEnterItem(this)"
-             onmouseleave="onMouseLeaveItem(this)"
-             draggable="true">
-            <span class="ghost mover edit" style="visibility:hidden;"
-                  onclick="moveItem(this)">&#8801;</span>
-            <span class="plus edit">+</span>
+             draggable="true"
+             role="listitem">
+            <span class="ghost mover edit"
+                  style="visibility:hidden;"
+                  aria-hidden="true">&#8801;</span>
+            <span class="plus edit" aria-hidden="true">+</span>
             <div id="input-element-${squareId}-${elementId}"
                  class="element edit"
                  contenteditable="true"
+                 role="textbox"
+                 aria-label="Elemento de lista"
                  placeholder="Elemento de lista"
-                 data-has-next-element="0"
-                 onkeypress="onItemKeyPress(event, ${squareId}, ${elementId + 1});"
-                 onfocusin="onFocusInInput(this)"
-                 onfocusout="onFocusOutInput(this)">
+                 data-has-next-element="0">
             </div>
-            <span class="ghost close cursor-hand hidden edit"
-                  onclick="deleteItem(this)"
-                  onmouseenter="onMouseEnterSpan(true)"
-                  onmouseleave="onMouseEnterSpan(false)">x</span>
+            <button class="ghost close cursor-hand hidden edit"
+                    aria-label="Eliminar este elemento">x</button>
         </div>`;
 }
 
 function renderCheckbox() {
     return `<input type="checkbox"
                    class="checkbox-item cursor-hand appearance edit"
-                   onchange="checkedItem(this)"/>`;
+                   aria-label="Marcar como completado"/>`;
+}
+
+// ── Utilidad ────────────────────────────────────────────────────
+
+// Escapa comillas para uso seguro dentro de atributos HTML
+function escapeAttr(str) {
+    return str.replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }

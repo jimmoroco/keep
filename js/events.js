@@ -14,13 +14,22 @@ let isHoveringCloseBtn = false;
 function initEvents() {
     editContainer = document.getElementById("div-container-edit");
 
-    document.getElementById("icon-plus").addEventListener("click", function () {
-        openEditPanel(null);
-    });
-
+    document.getElementById("icon-plus").addEventListener("click", () => openEditPanel(null));
     document.body.addEventListener("click", onDocumentClick);
+    document.body.addEventListener("keydown", onGlobalKeyDown);
+
+    initEditPanelDelegation();
     initSearch();
     initDragAndDrop();
+}
+
+// ── Teclado global ──────────────────────────────────────────────
+
+function onGlobalKeyDown(e) {
+    if (e.key === "Escape" && !editContainer.classList.contains("hidden")) {
+        if (hasPanelContent()) confirmSquare();
+        closeEditPanel();
+    }
 }
 
 // ── Clicks globales ─────────────────────────────────────────────
@@ -28,7 +37,6 @@ function initEvents() {
 function onDocumentClick(e) {
     const clicked = e.target;
 
-    // El botón + tiene su propio listener, no lo interceptamos acá
     if (clicked.id === "icon-plus") return;
 
     // Click en una tarjeta en modo lectura: abrir en edición
@@ -43,21 +51,17 @@ function onDocumentClick(e) {
     if (clicked.classList.contains("edit")) return;
 
     // Click fuera del panel: guardar si hay contenido, luego cerrar
-    if (hasPanelContent()) {
-        confirmSquare();
-    }
+    if (hasPanelContent()) confirmSquare();
     closeEditPanel();
 }
 
 // ── Panel de edición ────────────────────────────────────────────
 
-// square = null → nota nueva | square = objeto → edición existente
 function openEditPanel(square) {
     if (square) {
         editingSquareId   = square.id;
         isEditingExisting = true;
     } else {
-        // ID temporal para los IDs del DOM del formulario
         editingSquareId   = 0;
         isEditingExisting = false;
     }
@@ -74,32 +78,23 @@ function closeEditPanel() {
 }
 
 function hasPanelContent() {
-    const elements = editContainer.getElementsByClassName("element");
-    for (let i = 0; i < elements.length; i++) {
-        if (elements[i].innerText.trim() !== "") return true;
-    }
     const title = editContainer.querySelector(".title");
-    return title && title.innerText.trim() !== "";
+    if (title && title.innerText.trim() !== "") return true;
+    const elements = editContainer.querySelectorAll(".element[data-has-next-element='1']");
+    return elements.length > 0;
 }
 
-// Lee el formulario y dispara ADD_SQUARE o EDIT_SQUARE
 function confirmSquare() {
     const titleEl    = document.getElementById(`input-title-${editingSquareId}`);
     const checkBoxes = Array.from(editContainer.getElementsByClassName("checkbox-item"));
-
-    // Capturamos todos los elementos de lista que tengan texto confirmado
-    // (data-has-next-element="1" significa que el usuario presionó Enter en ese item)
-    const itemEls = Array.from(editContainer.querySelectorAll(".element[data-has-next-element='1']"));
+    const itemEls    = Array.from(editContainer.querySelectorAll(".element[data-has-next-element='1']"));
 
     const items = itemEls.map((el, i) => ({
         checked: checkBoxes[i] ? checkBoxes[i].checked : false,
         text:    el.innerText.trim()
     })).filter(item => item.text !== "");
 
-    const data = {
-        title: titleEl.innerText.trim(),
-        items
-    };
+    const data = { title: titleEl.innerText.trim(), items };
 
     if (isEditingExisting) {
         dispatch({ type: Actions.EDIT_SQUARE, id: editingSquareId, data });
@@ -108,13 +103,109 @@ function confirmSquare() {
     }
 }
 
+// ── Delegación de eventos del panel de edición ──────────────────
+//
+// En lugar de onkeypress/onfocusin/onfocusout inline en cada elemento,
+// un único listener en el container detecta el target y actúa.
+
+function initEditPanelDelegation() {
+
+    editContainer.addEventListener("keypress", function (e) {
+        const target = e.target;
+
+        if (target.classList.contains("title")) {
+            const squareId   = +target.id.replace("input-title-", "");
+            const firstInput = getListInput(squareId, 0);
+            focusOnEnter(e, firstInput);
+            return;
+        }
+
+        if (target.classList.contains("element") && target.isContentEditable) {
+            const match = target.id.match(/input-element-(\d+)-(\d+)/);
+            if (!match) return;
+            const squareId  = +match[1];
+            const elementId = +match[2];
+            handleItemKeyPress(e, target, squareId, elementId);
+        }
+    });
+
+    editContainer.addEventListener("focusin", function (e) {
+        const target = e.target;
+        if (!target.classList.contains("element")) return;
+        if (!itemHasText(target)) return;
+
+        const [spanMover, spanClose] = target.parentNode.querySelectorAll(".ghost");
+        if (!spanClose) return;
+        spanMover.style.visibility = "visible";
+        spanClose.classList.remove("hidden");
+    });
+
+    editContainer.addEventListener("focusout", function (e) {
+        const target = e.target;
+        if (!target.classList.contains("element")) return;
+        if (isHoveringCloseBtn) return;
+
+        const [spanMover, spanClose] = target.parentNode.querySelectorAll(".ghost");
+        if (!spanClose) return;
+        spanMover.style.visibility = "hidden";
+        spanClose.classList.add("hidden");
+    });
+
+    editContainer.addEventListener("mouseenter", function (e) {
+        const item = e.target.closest(".item.edit");
+        if (!item) return;
+        const input = item.getElementsByClassName("element")[0];
+        if (!itemHasText(input)) return;
+
+        const [spanMover, spanClose] = item.querySelectorAll(".ghost");
+        if (!spanClose) return;
+        spanMover.style.visibility = "visible";
+        spanClose.classList.remove("hidden");
+    }, true);
+
+    editContainer.addEventListener("mouseleave", function (e) {
+        const item = e.target.closest(".item.edit");
+        if (!item) return;
+        const [spanMover, spanClose] = item.querySelectorAll(".ghost");
+        if (!spanClose) return;
+        const input = item.getElementsByClassName("element")[0];
+        if (input !== document.activeElement) {
+            spanMover.style.visibility = "hidden";
+            spanClose.classList.add("hidden");
+        }
+    }, true);
+
+    editContainer.addEventListener("change", function (e) {
+        if (e.target.classList.contains("checkbox-item")) {
+            checkedItem(e.target);
+        }
+    });
+
+    editContainer.addEventListener("click", function (e) {
+        if (e.target.classList.contains("close")) {
+            deleteItem(e.target);
+        }
+        if (e.target.classList.contains("mover")) {
+            moveItem(e.target);
+        }
+    });
+}
+
 // ── Tarjetas ────────────────────────────────────────────────────
 
 function onDeleteSquareClick(e, span) {
     e.stopPropagation();
     const divSquare = span.parentNode.parentNode;
-    const id = +divSquare.id.replace("square-", "");
+    const id        = +divSquare.id.replace("square-", "");
+
     dispatch({ type: Actions.DELETE_SQUARE, id });
+
+    showToast("Nota eliminada", "info", {
+        label:   "Deshacer",
+        handler: () => {
+            dispatch({ type: Actions.UNDO_DELETE });
+        }
+    });
 }
 
 function enterTrash(div) {
@@ -123,6 +214,47 @@ function enterTrash(div) {
 
 function leaveTrash(div) {
     div.firstElementChild.style.visibility = "hidden";
+}
+
+// ── Toast ───────────────────────────────────────────────────────
+
+function showToast(message, type = "info", action = null) {
+    const container = document.getElementById("toast-container");
+    const toast     = document.createElement("div");
+    toast.className = `toast toast--${type}`;
+    toast.setAttribute("role", "status");
+    toast.setAttribute("aria-live", "polite");
+
+    const text = document.createElement("span");
+    text.textContent = message;
+    toast.appendChild(text);
+
+    if (action) {
+        const btn = document.createElement("button");
+        btn.className   = "toast__action";
+        btn.textContent = action.label;
+        btn.addEventListener("click", () => {
+            action.handler();
+            removeToast(toast);
+        });
+        toast.appendChild(btn);
+    }
+
+    container.appendChild(toast);
+
+    const timer = setTimeout(() => removeToast(toast), Config.TOAST_DURATION_MS);
+
+    // Cancelar el auto-dismiss si el usuario interactúa con el toast
+    toast.addEventListener("mouseenter", () => clearTimeout(timer));
+    toast.addEventListener("mouseleave", () =>
+        setTimeout(() => removeToast(toast), 1500)
+    );
+}
+
+function removeToast(toast) {
+    if (!toast.parentNode) return;
+    toast.classList.add("removing");
+    toast.addEventListener("animationend", () => toast.remove(), { once: true });
 }
 
 // ── Búsqueda en tiempo real ─────────────────────────────────────
@@ -135,7 +267,6 @@ function initSearch() {
         highlightSearchMatches(this.value.trim().toLowerCase());
     });
 
-    // Escape limpia la búsqueda
     input.addEventListener("keydown", function (e) {
         if (e.key === "Escape") {
             this.value = "";
@@ -146,20 +277,14 @@ function initSearch() {
 }
 
 function highlightSearchMatches(query) {
-    const squares = document.querySelectorAll(".square");
-    squares.forEach(sq => {
-        if (!query) {
-            sq.classList.remove("search-match");
-            return;
-        }
+    document.querySelectorAll(".square").forEach(sq => {
+        if (!query) { sq.classList.remove("search-match"); return; }
         const squareId = +sq.getAttribute("data-id");
         const square   = getSquareById(squareId);
         if (!square) return;
-
         const matches =
             square.title.toLowerCase().includes(query) ||
             square.items.some(item => item.text.toLowerCase().includes(query));
-
         sq.classList.toggle("search-match", matches);
     });
 }
@@ -170,8 +295,6 @@ let dragSourceId = null;
 
 function initDragAndDrop() {
     const container = document.getElementById("div-container");
-
-    // Delegamos en el container para cubrir tarjetas renderizadas dinámicamente
     container.addEventListener("dragstart", onCardDragStart);
     container.addEventListener("dragend",   onCardDragEnd);
     container.addEventListener("dragover",  onCardDragOver);
@@ -186,11 +309,8 @@ function getCardFromTarget(target) {
 function onCardDragStart(e) {
     const card = getCardFromTarget(e.target);
     if (!card) return;
-
     dragSourceId = +card.getAttribute("data-id");
     card.classList.add("dragging");
-
-    // Necesario para que Firefox inicie el drag
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/plain", dragSourceId);
 }
@@ -198,22 +318,16 @@ function onCardDragStart(e) {
 function onCardDragEnd(e) {
     const card = getCardFromTarget(e.target);
     if (card) card.classList.remove("dragging");
-
-    // Limpiar cualquier drag-over que haya quedado
     document.querySelectorAll(".square.drag-over")
         .forEach(el => el.classList.remove("drag-over"));
-
     dragSourceId = null;
 }
 
 function onCardDragOver(e) {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
-
     const card = getCardFromTarget(e.target);
     if (!card || +card.getAttribute("data-id") === dragSourceId) return;
-
-    // Resaltar solo la tarjeta sobre la que estamos
     document.querySelectorAll(".square.drag-over")
         .forEach(el => el.classList.remove("drag-over"));
     card.classList.add("drag-over");
@@ -221,7 +335,6 @@ function onCardDragOver(e) {
 
 function onCardDragLeave(e) {
     const card = getCardFromTarget(e.target);
-    // relatedTarget evita flickering al moverse entre hijos
     if (card && !card.contains(e.relatedTarget)) {
         card.classList.remove("drag-over");
     }
@@ -231,13 +344,11 @@ function onCardDrop(e) {
     e.preventDefault();
     const card = getCardFromTarget(e.target);
     if (!card) return;
-
     card.classList.remove("drag-over");
 
     const targetId = +card.getAttribute("data-id");
     if (targetId === dragSourceId || dragSourceId === null) return;
 
-    // Reordenar el array de squares moviendo el source antes del target
     const squares     = [...state.squares];
     const sourceIndex = squares.findIndex(s => s.id === dragSourceId);
     const targetIndex = squares.findIndex(s => s.id === targetId);
@@ -245,14 +356,32 @@ function onCardDrop(e) {
 
     const [moved] = squares.splice(sourceIndex, 1);
     squares.splice(targetIndex, 0, moved);
-
     dispatch({ type: Actions.REORDER_SQUARES, squares });
 }
 
 // ── Items de lista (panel de edición) ───────────────────────────
-//
-// checkedItem y deleteItem operan sobre el DOM del panel de edición,
-// que es UI temporal. El estado real se persiste solo al confirmar.
+
+function handleItemKeyPress(event, actualElement, squareId, elementId) {
+    const hasNextElement = actualElement.getAttribute("data-has-next-element");
+    const nextInput      = getListInput(squareId, elementId + 1);
+
+    if (hasNextElement === "0") {
+        const parentDiv = actualElement.parentNode.parentNode;
+        parentDiv.insertAdjacentHTML("beforeend", renderNewListItem(squareId, elementId + 1));
+
+        actualElement.previousElementSibling.innerHTML = renderCheckbox();
+        actualElement.classList.add("done");
+        actualElement.setAttribute("data-has-next-element", "1");
+
+        const [spanMover, spanClose] = actualElement.parentNode.querySelectorAll(".ghost");
+        if (spanClose) {
+            spanMover.style.visibility = "visible";
+            spanClose.classList.remove("hidden");
+        }
+    }
+
+    focusOnEnter(event, getListInput(squareId, elementId + 1) || nextInput);
+}
 
 function checkedItem(checkBox) {
     const divItem     = checkBox.parentNode.parentNode;
@@ -260,7 +389,6 @@ function checkedItem(checkBox) {
 
     checkBox.classList.toggle("appearance");
     inputTarget.classList.toggle("line-through");
-    inputTarget.readOnly = checkBox.checked;
 
     const divDone    = document.getElementById("div-done");
     const divPending = document.getElementById("div-pending");
@@ -292,84 +420,7 @@ function moveItem(spanMover) {
     spanMover.parentNode.style.transform = "scale(1.09)";
 }
 
-// ── Hover en items ──────────────────────────────────────────────
-
-function onMouseEnterItem(div) {
-    const input = div.getElementsByClassName("element")[0];
-    if (!itemHasText(input)) return;
-
-    const [spanMover, spanClose] = div.querySelectorAll(".ghost");
-    if (!spanClose) return;
-
-    spanMover.style.visibility = "visible";
-    spanClose.classList.remove("hidden");
-}
-
-function onMouseLeaveItem(div) {
-    const [spanMover, spanClose] = div.querySelectorAll(".ghost");
-    if (!spanClose) return;
-
-    const input = div.getElementsByClassName("element")[0];
-    if (input !== document.activeElement) {
-        spanMover.style.visibility = "hidden";
-        spanClose.classList.add("hidden");
-    }
-}
-
-function onMouseEnterSpan(flag) {
-    isHoveringCloseBtn = flag;
-}
-
-// ── Focus en inputs ─────────────────────────────────────────────
-
-function onFocusInInput(input) {
-    if (!itemHasText(input)) return;
-
-    const [spanMover, spanClose] = input.parentNode.querySelectorAll(".ghost");
-    if (!spanClose) return;
-
-    spanMover.style.visibility = "visible";
-    spanClose.classList.remove("hidden");
-}
-
-function onFocusOutInput(input) {
-    if (isHoveringCloseBtn) return;
-
-    const [spanMover, spanClose] = input.parentNode.querySelectorAll(".ghost");
-    if (!spanClose) return;
-
-    spanMover.style.visibility = "hidden";
-    spanClose.classList.add("hidden");
-}
-
-// ── Teclado ─────────────────────────────────────────────────────
-
-function onTitleKeyPress(event, squareId, elementId) {
-    focusOnEnter(event, getListInput(squareId, elementId));
-}
-
-function onItemKeyPress(event, squareId, elementId) {
-    const actualElement  = event.target;
-    const hasNextElement = actualElement.getAttribute("data-has-next-element");
-    const nextInput      = getListInput(squareId, elementId);
-
-    if (hasNextElement === "0") {
-        const parentDiv = actualElement.parentNode.parentNode;
-        parentDiv.insertAdjacentHTML("beforeend", renderNewListItem(squareId, elementId));
-
-        actualElement.previousElementSibling.innerHTML = renderCheckbox();
-        actualElement.classList.toggle("done");
-        actualElement.setAttribute("data-has-next-element", "1");
-
-        const [spanMover, spanClose] = actualElement.parentNode.querySelectorAll(".ghost");
-        if (spanClose) {
-            spanMover.style.visibility = "visible";
-            spanClose.classList.remove("hidden");
-        }
-    }
-
-    focusOnEnter(event, nextInput);
-}
+// ── Helpers ─────────────────────────────────────────────────────
 
 function focusOnEnter(event, element) {
     if (event.keyCode === 13 || event.which === 13) {
@@ -377,8 +428,6 @@ function focusOnEnter(event, element) {
         if (element) element.focus();
     }
 }
-
-// ── Helpers ─────────────────────────────────────────────────────
 
 function getListInput(squareId, elementId) {
     return document.getElementById(`input-element-${squareId}-${elementId}`);
@@ -391,6 +440,10 @@ function extractIndexFromId(element) {
 
 function itemHasText(input) {
     return input.getAttribute("data-has-next-element") === "1";
+}
+
+function onMouseEnterSpan(flag) {
+    isHoveringCloseBtn = flag;
 }
 
 function restoreItemToPending(divPending, itemToRestore) {

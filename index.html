@@ -1,26 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Keep — aplicación de notas personal">
     <link rel="stylesheet" href="css.css">
     <link rel="icon" sizes="128x128" href="https://ssl.gstatic.com/keep/icon_2020q4v2_128.png">
     <title>Keep</title>
 </head>
 
 <body>
-    <div>
-        <div class="search">
-            <input type="text" id="txtSearch" placeholder="Buscar notas…" autocomplete="off">
+    <main>
+        <div class="search" role="search">
+            <input type="text"
+                   id="txtSearch"
+                   placeholder="Buscar notas…"
+                   autocomplete="off"
+                   aria-label="Buscar entre tus notas">
         </div>
-        <div class="edit-area hidden" id="div-container-edit"></div>
-        <div class="container no-edit" id="div-container"></div>
-    </div>
+        <div class="edit-area hidden"
+             id="div-container-edit"
+             aria-live="polite">
+        </div>
+        <div class="container no-edit"
+             id="div-container"
+             role="list"
+             aria-label="Tus notas">
+        </div>
+    </main>
+
     <footer>
-        <span class="icon-plus cursor-hand" id="icon-plus">+</span>
-        <div class="footer-version">&#128240v1.1.5</div>
+        <button class="icon-plus"
+                id="icon-plus"
+                aria-label="Crear nueva nota">+</button>
+        <div class="footer-version" aria-hidden="true">&#128240;v1.2.0</div>
     </footer>
+
+    <!-- Contenedor de notificaciones -->
+    <div id="toast-container" role="region" aria-label="Notificaciones" aria-live="polite"></div>
+
+    <script src="js/config.js"></script>
     <script src="js/state.js"></script>
     <script src="js/storage.js"></script>
     <script src="js/render.js"></script>
