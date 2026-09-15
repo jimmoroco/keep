@@ -302,10 +302,13 @@ body {
     border-color: rgba(255, 255, 255, 0.6);
 }
 
-/* Tarjeta con coincidencia de búsqueda */
-.square.search-match {
-    border-color: var(--color-page);
-    box-shadow: 0 0 8px rgba(255, 221, 0, 0.4);
+/* ── Resaltado de búsqueda ─────────────────────────────────────── */
+
+mark {
+    background-color: rgba(255, 221, 0, 0.45);
+    color: inherit;
+    border-radius: 2px;
+    padding: 0 1px;
 }
 
 /* ── Mover item ────────────────────────────────────────────────── */

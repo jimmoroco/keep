@@ -301,28 +301,13 @@ function initSearch() {
 
     input.addEventListener("input", function () {
         dispatch({ type: Actions.SET_SEARCH, query: this.value });
-        highlightSearchMatches(this.value.trim().toLowerCase());
     });
 
     input.addEventListener("keydown", function (e) {
         if (e.key === "Escape") {
             this.value = "";
             dispatch({ type: Actions.SET_SEARCH, query: "" });
-            highlightSearchMatches("");
         }
-    });
-}
-
-function highlightSearchMatches(query) {
-    document.querySelectorAll(".square").forEach(sq => {
-        if (!query) { sq.classList.remove("search-match"); return; }
-        const squareId = +sq.getAttribute("data-id");
-        const square   = getSquareById(squareId);
-        if (!square) return;
-        const matches =
-            square.title.toLowerCase().includes(query) ||
-            square.items.some(item => item.text.toLowerCase().includes(query));
-        sq.classList.toggle("search-match", matches);
     });
 }
 

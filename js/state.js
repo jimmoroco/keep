@@ -135,18 +135,19 @@ function reducer(currentState, action) {
     }
 }
 
-// SET_SEARCH no persiste ni re-renderiza: es filtro de UI efímero.
+// SET_SEARCH re-renderiza pero no persiste: es filtro de UI efímero.
 // SET_COLOR en edición activa: persiste pero no re-renderiza (el panel se
 // actualiza directamente en events.js para no destruir el formulario abierto).
 function dispatch(action) {
     state = reducer(state, action);
-    if (action.type === Actions.SET_SEARCH) return;
     if (action.type === Actions.SET_COLOR && action.skipRender) {
         persist(state);
         return;
     }
     render(state);
-    persist(state);
+    if (action.type !== Actions.SET_SEARCH) {
+        persist(state);
+    }
 }
 
 // ── Validación y sanitización ───────────────────────────────────

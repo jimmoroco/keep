@@ -9,21 +9,21 @@ function render(state) {
     const divContainer = document.getElementById("div-container");
     divContainer.innerHTML = "";
 
+    const query    = state.searchQuery.trim().toLowerCase();
     const visible  = getVisibleSquares(state);
     const pinned   = visible.filter(s => s.pinned);
     const unpinned = visible.filter(s => !s.pinned);
 
     if (pinned.length > 0) {
         divContainer.insertAdjacentHTML("beforeend", renderSectionLabel("Fijadas"));
-        pinned.forEach(square => renderSquareCard(divContainer, square));
+        pinned.forEach(square => renderSquareCard(divContainer, square, query));
     }
 
     if (unpinned.length > 0) {
-        // Solo mostrar la etiqueta "Otras notas" si también hay fijadas
         if (pinned.length > 0) {
             divContainer.insertAdjacentHTML("beforeend", renderSectionLabel("Otras notas"));
         }
-        unpinned.forEach(square => renderSquareCard(divContainer, square));
+        unpinned.forEach(square => renderSquareCard(divContainer, square, query));
     }
 }
 
@@ -33,14 +33,14 @@ function renderSectionLabel(text) {
 
 // ── Tarjeta de nota (modo lectura) ──────────────────────────────
 
-function renderSquareCard(divContainer, square) {
+function renderSquareCard(divContainer, square, query = "") {
     const pendingItems = square.items.filter(item => !item.checked);
     const doneItems    = square.items.filter(item => item.checked);
 
     const doneSection = doneItems.length > 0 ? `
         <hr class="no-edit" data-id="${square.id}" aria-hidden="true">
         <div class="square-done no-edit" data-id="${square.id}" role="list" aria-label="Completados">
-            ${doneItems.map(item => renderCardItem(square.id, item.text, true)).join("")}
+            ${doneItems.map(item => renderCardItem(square.id, item.text, true, query)).join("")}
         </div>` : "";
 
     const title        = square.title || "Sin título";
@@ -48,6 +48,7 @@ function renderSquareCard(divContainer, square) {
     const pinLabel     = square.pinned ? "Desfijar nota" : "Fijar nota";
     const pinIcon      = square.pinned ? "📌" : "📍";
     const colorStyle   = square.color ? `style="background-color:${square.color}"` : "";
+    const highlightedTitle = query ? highlightText(title, query) : title;
 
     const html = `
         <article class="square cursor-hand no-edit ${pinnedClass}"
@@ -69,11 +70,11 @@ function renderSquareCard(divContainer, square) {
                 <div class="no-edit title cursor-hand"
                      data-id="${square.id}"
                      aria-hidden="true">
-                    ${title}
+                    ${highlightedTitle}
                 </div>
                 ${pendingItems.length > 0
                     ? `<div role="list" aria-label="Pendientes" class="no-edit" data-id="${square.id}">
-                           ${pendingItems.map(item => renderCardItem(square.id, item.text, false)).join("")}
+                           ${pendingItems.map(item => renderCardItem(square.id, item.text, false, query)).join("")}
                        </div>`
                     : ""}
             </div>
@@ -91,10 +92,11 @@ function renderSquareCard(divContainer, square) {
     divContainer.insertAdjacentHTML("beforeend", html);
 }
 
-function renderCardItem(squareId, text, checked) {
-    const lineThrough  = checked ? "line-through" : "";
-    const disabledAttr = checked ? "disabled checked" : "";
-    const ariaChecked  = checked ? "true" : "false";
+function renderCardItem(squareId, text, checked, query = "") {
+    const lineThrough       = checked ? "line-through" : "";
+    const disabledAttr      = checked ? "disabled checked" : "";
+    const ariaChecked       = checked ? "true" : "false";
+    const highlightedText   = query ? highlightText(text, query) : text;
     return `
         <div class="item no-edit" data-id="${squareId}" role="listitem">
             <span class="plus" data-id="${squareId}" aria-hidden="true">
@@ -107,7 +109,7 @@ function renderCardItem(squareId, text, checked) {
             <div class="no-edit element cursor-hand ${lineThrough}"
                  data-id="${squareId}"
                  aria-label="${escapeAttr(text)}${checked ? " (completado)" : ""}">
-                ${text}
+                ${highlightedText}
             </div>
         </div>`;
 }
@@ -206,7 +208,21 @@ function renderCheckbox() {
 
 // ── Utilidad ────────────────────────────────────────────────────
 
-// ── Paleta de colores ───────────────────────────────────────────
+// Escapa comillas para uso seguro dentro de atributos HTML
+function escapeAttr(str) {
+    return str.replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+// Envuelve las coincidencias del query en <mark> para resaltarlas.
+// Escapa el texto primero para evitar XSS antes de insertar el HTML del mark.
+function highlightText(text, query) {
+    const escaped = text.replace(/[&<>"']/g, c => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[c]));
+    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`(${escapedQuery})`, "gi");
+    return escaped.replace(regex, "<mark>$1</mark>");
+}
 
 function renderColorPicker(squareId, currentColor) {
     const swatches = Config.CARD_COLORS.map(c => {
