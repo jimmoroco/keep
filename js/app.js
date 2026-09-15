@@ -6,6 +6,9 @@
 //   3. Inicializar los event listeners
 
 window.addEventListener("load", function () {
+    // Versión en el footer
+    const footerVersion = document.querySelector(".footer-version");
+    if (footerVersion) footerVersion.textContent = `📰v${APP_VERSION}`;
     // Intentar cargar estado nuevo, luego legacy, luego estado vacío
     const saved = loadState() || migrateFromLegacy() || { squares: [] };
 
