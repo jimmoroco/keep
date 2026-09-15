@@ -170,8 +170,8 @@ function renderEditListItem(squareId, elementId, item) {
                  aria-label="Elemento de lista"
                  placeholder="Elemento de lista"
                  data-has-next-element="1">${item.text}</div>
-            <button class="ghost close cursor-hand hidden edit"
-                    aria-label="Eliminar este elemento">x</button>
+            <button class="ghost close cursor-hand edit"
+                    aria-label="Eliminar este elemento">${CLOSE_ICON}</button>
         </div>`;
 }
 
@@ -193,8 +193,8 @@ function renderNewListItem(squareId, elementId) {
                  placeholder="Elemento de lista"
                  data-has-next-element="0">
             </div>
-            <button class="ghost close cursor-hand hidden edit"
-                    aria-label="Eliminar este elemento">x</button>
+            <button class="ghost close cursor-hand edit"
+                    aria-label="Eliminar este elemento">${CLOSE_ICON}</button>
         </div>`;
 }
 
@@ -203,6 +203,8 @@ function renderCheckbox() {
                    class="checkbox-item cursor-hand appearance edit"
                    aria-label="Marcar como completado"/>`;
 }
+
+// ── Utilidad ────────────────────────────────────────────────────
 
 // ── Paleta de colores ───────────────────────────────────────────
 
@@ -227,7 +229,8 @@ function renderColorPicker(squareId, currentColor) {
     return `<div class="color-swatches edit">${swatches}</div>`;
 }
 
-// ── Utilidad ────────────────────────────────────────────────────
+// SVG del ícono X para el botón de eliminar item
+const CLOSE_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
 // Escapa comillas para uso seguro dentro de atributos HTML
 function escapeAttr(str) {
     return str.replace(/"/g, "&quot;").replace(/'/g, "&#39;");

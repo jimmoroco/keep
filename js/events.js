@@ -141,7 +141,7 @@ function initEditPanelDelegation() {
         const [spanMover, spanClose] = target.parentNode.querySelectorAll(".ghost");
         if (!spanClose) return;
         spanMover.style.visibility = "visible";
-        spanClose.classList.remove("hidden");
+        spanClose.style.visibility = "visible";
     });
 
     editContainer.addEventListener("focusout", function (e) {
@@ -152,7 +152,7 @@ function initEditPanelDelegation() {
         const [spanMover, spanClose] = target.parentNode.querySelectorAll(".ghost");
         if (!spanClose) return;
         spanMover.style.visibility = "hidden";
-        spanClose.classList.add("hidden");
+        spanClose.style.visibility = "hidden";
     });
 
     editContainer.addEventListener("mouseenter", function (e) {
@@ -164,7 +164,7 @@ function initEditPanelDelegation() {
         const [spanMover, spanClose] = item.querySelectorAll(".ghost");
         if (!spanClose) return;
         spanMover.style.visibility = "visible";
-        spanClose.classList.remove("hidden");
+        spanClose.style.visibility = "visible";
     }, true);
 
     editContainer.addEventListener("mouseleave", function (e) {
@@ -175,7 +175,7 @@ function initEditPanelDelegation() {
         const input = item.getElementsByClassName("element")[0];
         if (input !== document.activeElement) {
             spanMover.style.visibility = "hidden";
-            spanClose.classList.add("hidden");
+            spanClose.style.visibility = "hidden";
         }
     }, true);
 
@@ -413,7 +413,7 @@ function handleItemKeyPress(event, actualElement, squareId, elementId) {
         const [spanMover, spanClose] = actualElement.parentNode.querySelectorAll(".ghost");
         if (spanClose) {
             spanMover.style.visibility = "visible";
-            spanClose.classList.remove("hidden");
+            spanClose.style.visibility = "visible";
         }
     }
 

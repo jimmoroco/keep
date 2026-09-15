@@ -104,9 +104,21 @@ body {
 
 .close {
     margin-left: auto;
-    color: #757575;
-    background-color: transparent;
-    font-size: larger;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    color: rgba(255, 255, 255, 0.45);
+    cursor: pointer;
+    padding: 0;
+    transition: background-color var(--transition), color var(--transition);
+    line-height: 1;
+    visibility: hidden;  /* estado base: invisible pero ocupa espacio */
 }
 
 .element {
@@ -128,8 +140,14 @@ body {
     outline: 0;
 }
 
-.appearance {
-    appearance: none;
+.close:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: white;
+}
+
+.close svg {
+    display: block;
+    pointer-events: none;
 }
 
 .line-through {
@@ -504,4 +522,8 @@ body {
     .toast {
         max-width: 100%;
     }
+}
+
+.appearance {
+    appearance: none;
 }
